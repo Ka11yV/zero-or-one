@@ -1,9 +1,13 @@
 // 계정 서버 API. 같은 주소의 /api (운영: Caddy가 서버로 넘김, 개발: Vite 프록시)
 const BASE = (import.meta.env.VITE_API_BASE as string | undefined) ?? '/api';
 
+export type ProviderId = 'google' | 'github' | 'dev';
+
 export interface User {
   id: string;
-  username: string;
+  name: string;
+  avatarUrl: string | null;
+  providers: string[];
 }
 
 export interface RemoteSave {
@@ -44,10 +48,13 @@ async function call<T>(method: string, path: string, body?: unknown): Promise<T>
 }
 
 export const api = {
+  /** 서버에 켜져 있는 로그인 방법 */
+  providers: () => call<{ providers: ProviderId[] }>('GET', '/auth/providers').then((r) => r.providers),
+  /** 소셜 로그인 시작 주소 (이 주소로 이동하면 제공자 화면 → 다시 게임으로 돌아옴) */
+  loginUrl: (p: ProviderId, returnTo: string) => `${BASE}/auth/${p}/start?return=${encodeURIComponent(returnTo)}`,
   me: () => call<{ user: User }>('GET', '/auth/me').then((r) => r.user),
-  signup: (username: string, password: string) => call<{ user: User }>('POST', '/auth/signup', { username, password }).then((r) => r.user),
-  login: (username: string, password: string) => call<{ user: User }>('POST', '/auth/login', { username, password }).then((r) => r.user),
   logout: () => call<void>('POST', '/auth/logout', {}),
+  deleteAccount: () => call<void>('DELETE', '/auth/me'),
   getSave: (game: string) => call<RemoteSave>('GET', `/saves/${game}`),
   putSave: (game: string, data: unknown, baseRev: number) => call<{ rev: number; updatedAt: string }>('PUT', `/saves/${game}`, { data, baseRev }),
 };

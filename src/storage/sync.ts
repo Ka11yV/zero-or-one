@@ -13,7 +13,7 @@ const PUSH_DELAY = 1500;
 /** 이 브라우저의 동기화 상태 (로그인한 계정, 마지막으로 맞춘 서버 rev, 그 뒤 로컬 변경 여부) */
 interface SyncMeta {
   userId: string;
-  username: string;
+  name: string;
   rev: number;
   dirty: boolean;
   syncedAt?: number;
@@ -27,7 +27,7 @@ export interface SyncState {
   syncedAt?: number;
 }
 
-type Api = Pick<typeof realApi, 'me' | 'login' | 'signup' | 'logout' | 'getSave' | 'putSave'>;
+type Api = Pick<typeof realApi, 'me' | 'logout' | 'deleteAccount' | 'getSave' | 'putSave'>;
 
 function readMeta(): SyncMeta | null {
   try {
@@ -62,10 +62,11 @@ function writeLocalSave(s: LogicSave): void {
 export interface SyncController {
   state(): SyncState;
   onState(fn: (s: SyncState) => void): () => void;
-  /** 앱 시작 시: 로그인돼 있으면 서버와 맞춘다 */
+  /** 앱 시작 시(소셜 로그인에서 돌아온 직후 포함): 로그인돼 있으면 서버와 맞춘다 */
   init(): Promise<void>;
-  login(username: string, password: string, signup: boolean): Promise<void>;
   logout(): Promise<void>;
+  /** 계정과 서버 기록 삭제 (이 브라우저의 기록은 남는다) */
+  deleteAccount(): Promise<void>;
   /** 지금 바로 서버와 맞추기 */
   syncNow(): Promise<void>;
   dispose(): void;
@@ -170,8 +171,8 @@ export function createSync(opts: { onRemoteApplied(): void; api?: Api; pushDelay
     const same = meta?.userId === user.id;
     if (!same) {
       backupProgress(loadProgress());
-      writeMeta({ userId: user.id, username: user.username, rev: 0, dirty: true });
-    }
+      writeMeta({ userId: user.id, name: user.name, rev: 0, dirty: true });
+    } else writeMeta({ ...meta!, name: user.name });
     set({ user });
     await pull(!same || meta!.dirty ? 'local' : 'remote');
   };
@@ -194,17 +195,9 @@ export function createSync(opts: { onRemoteApplied(): void; api?: Api; pushDelay
           }
           // 서버에 닿지 않음: 로그인 정보가 남아 있으면 계정 이름은 보여 주되 오프라인
           const meta = readMeta();
-          set({ user: meta ? { id: meta.userId, username: meta.username } : null });
+          set({ user: meta ? { id: meta.userId, name: meta.name, avatarUrl: null, providers: [] } : null });
           fail(e);
         }
-      }),
-    login: (username, password, signup) =>
-      run(async () => {
-        const user = await (signup ? api.signup(username, password) : api.login(username, password));
-        await startFor(user).catch((e) => {
-          fail(e);
-          throw e;
-        });
       }),
     logout: () =>
       run(async () => {
@@ -212,6 +205,13 @@ export function createSync(opts: { onRemoteApplied(): void; api?: Api; pushDelay
         if (readMeta()?.dirty) await push().catch(() => {});
         await api.logout().catch(() => {});
         // 이 브라우저의 기록은 그대로 둔다 (손님으로 계속 플레이)
+        writeMeta(null);
+        set({ status: 'guest', user: null, syncedAt: undefined });
+      }),
+    deleteAccount: () =>
+      run(async () => {
+        clearTimeout(timer);
+        await api.deleteAccount();
         writeMeta(null);
         set({ status: 'guest', user: null, syncedAt: undefined });
       }),

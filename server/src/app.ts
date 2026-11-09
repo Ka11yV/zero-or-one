@@ -1,18 +1,24 @@
 // API 라우트. 모든 경로는 /api 아래. 게임 정적 파일은 Caddy가 직접 서비스한다.
+// 로그인은 소셜 로그인(Google, GitHub)만: /api/auth/:provider/start → 제공자 → /api/auth/:provider/callback → 사이트로 돌아감
 import cookie from '@fastify/cookie';
 import rateLimit from '@fastify/rate-limit';
+import { randomBytes, timingSafeEqual } from 'node:crypto';
 import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
-import { dummyHash, hashPassword, hashToken, newSessionToken, normalizeUsername, PASSWORD_MAX, PASSWORD_MIN, USERNAME_RE, verifyPassword } from './auth.js';
+import { hashToken, newSessionToken, safeReturn } from './auth.js';
 import type { Config } from './config.js';
 import type { Db } from './db.js';
+import { configuredProviders, pkce, type Profile, type ProviderId } from './providers.js';
 
 /** 세이브를 받는 게임 목록 (새 게임을 만들면 여기에 추가) */
 export const GAMES = new Set(['logic']);
 const SAVE_LIMIT = 4 * 1024 * 1024;
+const OAUTH_COOKIE = 'zoo_oauth';
 
 export interface User {
   id: string;
-  username: string;
+  name: string;
+  avatarUrl: string | null;
+  providers: string[];
 }
 
 declare module 'fastify' {
@@ -21,22 +27,33 @@ declare module 'fastify' {
   }
 }
 
-const credBody = {
-  type: 'object',
-  required: ['username', 'password'],
-  additionalProperties: false,
-  properties: {
-    username: { type: 'string', maxLength: 64 },
-    password: { type: 'string', maxLength: PASSWORD_MAX },
-  },
-} as const;
+interface OAuthState {
+  p: ProviderId;
+  state: string;
+  verifier: string;
+  ret: string;
+}
 
-export async function buildApp(cfg: Config, db: Db, opts: { logger?: boolean } = {}): Promise<FastifyInstance> {
+export interface AppOptions {
+  logger?: boolean;
+  /** 테스트에서 제공자 응답을 흉내 내기 위함 */
+  fetch?: typeof fetch;
+}
+
+function sameString(a: string, b: string): boolean {
+  const x = Buffer.from(a);
+  const y = Buffer.from(b);
+  return x.length === y.length && timingSafeEqual(x, y);
+}
+
+export async function buildApp(cfg: Config, db: Db, opts: AppOptions = {}): Promise<FastifyInstance> {
   const app = Fastify({ logger: opts.logger ?? false, trustProxy: cfg.trustProxy, bodyLimit: SAVE_LIMIT });
-  await app.register(cookie);
+  const doFetch = opts.fetch ?? fetch;
+  const providers = configuredProviders(cfg);
+  await app.register(cookie, { secret: cfg.cookieSecret });
   await app.register(rateLimit, { global: false });
 
-  const cookieOpts = {
+  const sessionCookie = {
     path: '/',
     httpOnly: true,
     sameSite: 'lax' as const,
@@ -47,19 +64,22 @@ export async function buildApp(cfg: Config, db: Db, opts: { logger?: boolean } =
   // CSRF: 상태를 바꾸는 요청은 우리 사이트에서 온 것만 (SameSite=Lax 쿠키 + Origin 검사 + JSON 본문만 허용)
   app.addHook('onRequest', async (req, reply) => {
     if (req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS') return;
-    if (cfg.allowedOrigin && req.headers.origin !== cfg.allowedOrigin) return reply.code(403).send({ error: 'bad_origin' });
+    if (req.headers.origin !== cfg.publicUrl) return reply.code(403).send({ error: 'bad_origin' });
   });
 
   app.decorateRequest('user', null);
   app.addHook('preHandler', async (req) => {
     const token = req.cookies[cfg.cookieName];
     if (!token) return;
-    const r = await db.query<{ id: string; username: string }>(
-      `SELECT u.id::text AS id, u.username FROM sessions s JOIN users u ON u.id = s.user_id
+    const r = await db.query<{ id: string; name: string; avatar_url: string | null; providers: string[] }>(
+      `SELECT u.id::text AS id, u.display_name AS name, u.avatar_url,
+              ARRAY(SELECT provider FROM identities i WHERE i.user_id = u.id ORDER BY provider) AS providers
+       FROM sessions s JOIN users u ON u.id = s.user_id
        WHERE s.token_hash = $1 AND s.expires_at > now()`,
       [hashToken(token)],
     );
-    req.user = r.rows[0] ?? null;
+    const row = r.rows[0];
+    req.user = row ? { id: row.id, name: row.name, avatarUrl: row.avatar_url, providers: row.providers } : null;
   });
 
   const requireUser = async (req: FastifyRequest, reply: FastifyReply) => {
@@ -68,53 +88,103 @@ export async function buildApp(cfg: Config, db: Db, opts: { logger?: boolean } =
 
   const startSession = async (reply: FastifyReply, userId: string) => {
     const { token, hash } = newSessionToken();
-    await db.query(`INSERT INTO sessions (token_hash, user_id, expires_at) VALUES ($1, $2, now() + make_interval(days => $3))`, [
-      hash,
-      userId,
-      cfg.sessionDays,
-    ]);
+    await db.query(`INSERT INTO sessions (token_hash, user_id, expires_at) VALUES ($1, $2, now() + make_interval(days => $3))`, [hash, userId, cfg.sessionDays]);
     // 만료된 세션 정리 (가끔)
     if (Math.random() < 0.05) await db.query('DELETE FROM sessions WHERE expires_at < now()');
-    reply.setCookie(cfg.cookieName, token, cookieOpts);
+    reply.setCookie(cfg.cookieName, token, sessionCookie);
   };
 
-  const authLimit = { rateLimit: { max: cfg.authRateLimit, timeWindow: '1 minute' } };
+  /** 제공자 계정 → 우리 사용자 (처음이면 만든다). 이름·사진은 로그인할 때마다 최신으로 */
+  const upsertUser = async (provider: ProviderId, p: Profile): Promise<string> => {
+    const client = await db.connect();
+    try {
+      await client.query('BEGIN');
+      const found = await client.query<{ user_id: string }>(
+        `UPDATE identities SET last_login = now(), email = COALESCE($3, email) WHERE provider = $1 AND subject = $2 RETURNING user_id::text`,
+        [provider, p.subject, p.email],
+      );
+      let userId = found.rows[0]?.user_id;
+      if (userId) {
+        await client.query('UPDATE users SET display_name = $2, avatar_url = $3 WHERE id = $1', [userId, p.name.slice(0, 80), p.avatarUrl]);
+      } else {
+        const u = await client.query<{ id: string }>('INSERT INTO users (display_name, avatar_url) VALUES ($1, $2) RETURNING id::text', [p.name.slice(0, 80), p.avatarUrl]);
+        userId = u.rows[0]!.id;
+        await client.query('INSERT INTO identities (provider, subject, user_id, email) VALUES ($1, $2, $3, $4)', [provider, p.subject, userId, p.email]);
+      }
+      await client.query('COMMIT');
+      return userId;
+    } catch (e) {
+      await client.query('ROLLBACK');
+      throw e;
+    } finally {
+      client.release();
+    }
+  };
+
+  const redirectUri = (p: ProviderId) => `${cfg.publicUrl}/api/auth/${p}/callback`;
+  /** 사이트로 돌아가기: ?auth=ok|error 를 붙여 게임이 결과를 알린다 */
+  const backTo = (reply: FastifyReply, ret: string, result: string) => {
+    const [path, hash = ''] = ret.split('#');
+    const sep = path!.includes('?') ? '&' : '?';
+    return reply.redirect(`${cfg.publicUrl}${path}${sep}auth=${result}${hash ? `#${hash}` : ''}`, 302);
+  };
 
   app.get('/api/health', async () => ({ ok: true }));
 
-  app.post<{ Body: { username: string; password: string } }>(
-    '/api/auth/signup',
-    { schema: { body: credBody }, config: authLimit },
+  /** 켜져 있는 로그인 방법 (게임이 버튼을 그릴 때) */
+  app.get('/api/auth/providers', async () => ({ providers: [...providers.keys()] }));
+
+  const providerParams = { type: 'object', required: ['provider'], properties: { provider: { type: 'string', maxLength: 16 } } } as const;
+
+  app.get<{ Params: { provider: string }; Querystring: { return?: string } }>(
+    '/api/auth/:provider/start',
+    { schema: { params: providerParams }, config: { rateLimit: { max: cfg.authRateLimit, timeWindow: '1 minute' } } },
     async (req, reply) => {
-      const username = normalizeUsername(req.body.username);
-      const { password } = req.body;
-      if (!USERNAME_RE.test(username)) return reply.code(400).send({ error: 'invalid_username' });
-      if (password.length < PASSWORD_MIN) return reply.code(400).send({ error: 'invalid_password' });
-      const hash = await hashPassword(password);
-      const r = await db.query<{ id: string }>(
-        'INSERT INTO users (username, password_hash) VALUES ($1, $2) ON CONFLICT (username) DO NOTHING RETURNING id::text AS id',
-        [username, hash],
-      );
-      const row = r.rows[0];
-      if (!row) return reply.code(409).send({ error: 'username_taken' });
-      await startSession(reply, row.id);
-      return reply.code(201).send({ user: { id: row.id, username } });
+      const provider = providers.get(req.params.provider as ProviderId);
+      if (!provider) return reply.code(404).send({ error: 'unknown_provider' });
+      const state = randomBytes(16).toString('base64url');
+      const { verifier, challenge } = pkce();
+      const s: OAuthState = { p: provider.id, state, verifier, ret: safeReturn(req.query.return) };
+      reply.setCookie(OAUTH_COOKIE, JSON.stringify(s), {
+        path: '/api/auth',
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: cfg.cookieSecure,
+        signed: true,
+        maxAge: 600,
+      });
+      return reply.redirect(provider.authorizeUrl({ redirectUri: redirectUri(provider.id), state, challenge }), 302);
     },
   );
 
-  app.post<{ Body: { username: string; password: string } }>(
-    '/api/auth/login',
-    { schema: { body: credBody }, config: authLimit },
+  app.get<{ Params: { provider: string }; Querystring: { code?: string; state?: string; error?: string } }>(
+    '/api/auth/:provider/callback',
+    { schema: { params: providerParams } },
     async (req, reply) => {
-      const username = normalizeUsername(req.body.username);
-      const r = await db.query<{ id: string; password_hash: string }>('SELECT id::text AS id, password_hash FROM users WHERE username = $1', [
-        username,
-      ]);
-      const row = r.rows[0];
-      const ok = await verifyPassword(req.body.password, row?.password_hash ?? (await dummyHash()));
-      if (!row || !ok) return reply.code(401).send({ error: 'invalid_credentials' });
-      await startSession(reply, row.id);
-      return { user: { id: row.id, username } };
+      const provider = providers.get(req.params.provider as ProviderId);
+      if (!provider) return reply.code(404).send({ error: 'unknown_provider' });
+      const raw = req.cookies[OAUTH_COOKIE];
+      reply.clearCookie(OAUTH_COOKIE, { path: '/api/auth' });
+      const un = raw ? req.unsignCookie(raw) : null;
+      let s: OAuthState | null = null;
+      try {
+        s = un?.valid && un.value ? (JSON.parse(un.value) as OAuthState) : null;
+      } catch {
+        s = null;
+      }
+      const ret = s?.ret ?? '/';
+      // 사용자가 제공자 화면에서 취소
+      if (req.query.error) return backTo(reply, ret, 'cancelled');
+      if (!s || s.p !== provider.id || !req.query.state || !sameString(s.state, req.query.state) || !req.query.code) return backTo(reply, ret, 'error');
+      try {
+        const profile = await provider.exchange({ code: req.query.code, redirectUri: redirectUri(provider.id), verifier: s.verifier }, doFetch);
+        const userId = await upsertUser(provider.id, profile);
+        await startSession(reply, userId);
+        return backTo(reply, ret, 'ok');
+      } catch (e) {
+        req.log.warn({ err: e }, 'oauth callback failed');
+        return backTo(reply, ret, 'error');
+      }
     },
   );
 
@@ -126,6 +196,13 @@ export async function buildApp(cfg: Config, db: Db, opts: { logger?: boolean } =
   });
 
   app.get('/api/auth/me', { preHandler: requireUser }, async (req) => ({ user: req.user }));
+
+  /** 계정 삭제: 사용자·로그인 연결·세션·세이브 모두 삭제 (되돌릴 수 없음) */
+  app.delete('/api/auth/me', { preHandler: requireUser }, async (req, reply) => {
+    await db.query('DELETE FROM users WHERE id = $1', [req.user!.id]);
+    reply.clearCookie(cfg.cookieName, { path: '/' });
+    return reply.code(204).send();
+  });
 
   const gameParams = {
     type: 'object',

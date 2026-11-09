@@ -14,11 +14,22 @@ export const MIGRATIONS: { id: number; name: string; sql: string }[] = [
     name: 'accounts_and_saves',
     sql: `
       CREATE TABLE users (
-        id            BIGSERIAL PRIMARY KEY,
-        username      TEXT NOT NULL UNIQUE,
-        password_hash TEXT NOT NULL,
-        created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+        id           BIGSERIAL PRIMARY KEY,
+        display_name TEXT NOT NULL,
+        avatar_url   TEXT,
+        created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
       );
+      -- 소셜 로그인 연결 (한 사용자에 여러 제공자를 붙일 수 있는 구조)
+      CREATE TABLE identities (
+        provider   TEXT NOT NULL,
+        subject    TEXT NOT NULL,
+        user_id    BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        email      TEXT,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+        last_login TIMESTAMPTZ NOT NULL DEFAULT now(),
+        PRIMARY KEY (provider, subject)
+      );
+      CREATE INDEX identities_user_id ON identities(user_id);
       CREATE TABLE sessions (
         token_hash BYTEA PRIMARY KEY,
         user_id    BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,

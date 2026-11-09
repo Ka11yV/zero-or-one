@@ -8,7 +8,7 @@ NAND 게이트 하나에서 시작해 NOT → AND/OR/XOR → 가산기 → ALU �
 
 - 챕터 0–8, 58개 레벨 (마지막 장은 내가 만든 CPU에서 어셈블리 프로그램 실행)
 - 샌드박스: 내 칩 저장, 공유 링크, 16×16 픽셀 화면, 메모리 프로그램 적재, 회로 최적화
-- 계정(선택): 로그인하면 진행 기록이 서버에 저장되어 여러 기기에서 이어서 플레이
+- 계정(선택): Google·GitHub로 로그인하면 진행 기록이 서버에 저장되어 여러 기기에서 이어서 플레이
 
 ## 구조
 
@@ -32,7 +32,7 @@ docker run -d --name zoo-pg-dev -e POSTGRES_USER=zoo -e POSTGRES_PASSWORD=zoo-de
   -p 127.0.0.1:5433:5432 postgres:17-alpine
 docker exec zoo-pg-dev psql -U zoo -c "CREATE DATABASE zoo_test"
 cd server && npm install
-DATABASE_URL=postgres://zoo:zoo-dev@127.0.0.1:5433/zoo npm run dev   # :8787, 게임 dev 서버가 /api를 프록시
+cp .env.example .env && set -a && . ./.env && set +a && npm run dev   # :8787, 게임 dev 서버가 /api를 프록시 (DEV_LOGIN=1이면 가짜 로그인 버튼)
 npm test                                                              # API 테스트 (zoo_test DB)
 ```
 

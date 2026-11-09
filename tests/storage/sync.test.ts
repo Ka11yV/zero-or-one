@@ -77,7 +77,7 @@ class MemStorage {
 }
 
 function fakeServer() {
-  const users = new Map<string, { user: User; password: string }>();
+  const users = new Map<string, User>();
   const saves = new Map<string, { data: unknown; rev: number }>();
   let session: User | null = null;
   let online = true;
@@ -89,9 +89,14 @@ function fakeServer() {
     setOnline(v: boolean) {
       online = v;
     },
+    /** 소셜 로그인을 마치고 돌아온 상태 (세션 쿠키가 생김) */
+    signIn(name: string) {
+      if (!users.has(name)) users.set(name, { id: String(users.size + 1), name, avatarUrl: null, providers: ['google'] });
+      session = users.get(name)!;
+    },
     /** 다른 기기에서 저장한 것처럼 */
-    remoteWrite(username: string, data: LogicSave) {
-      const u = users.get(username)!.user;
+    remoteWrite(name: string, data: LogicSave) {
+      const u = users.get(name)!;
       const cur = saves.get(u.id);
       saves.set(u.id, { data: structuredClone(data), rev: (cur?.rev ?? 0) + 1 });
     },
@@ -101,21 +106,14 @@ function fakeServer() {
         if (!session) throw new ApiError(401, 'unauthorized');
         return session;
       },
-      async signup(username: string, password: string) {
-        net();
-        if (users.has(username)) throw new ApiError(409, 'username_taken');
-        const user = { id: String(users.size + 1), username };
-        users.set(username, { user, password });
-        return (session = user);
-      },
-      async login(username: string, password: string) {
-        net();
-        const u = users.get(username);
-        if (!u || u.password !== password) throw new ApiError(401, 'invalid_credentials');
-        return (session = u.user);
-      },
       async logout() {
         net();
+        session = null;
+      },
+      async deleteAccount() {
+        net();
+        saves.delete(session!.id);
+        users.delete(session!.name);
         session = null;
       },
       async getSave() {
@@ -163,9 +161,9 @@ describe('createSync', () => {
     saveProgress(prog({ '1-1': clear('1-1', 3) }));
     const srv = fakeServer();
     const sync = createSync({ api: srv.api, onRemoteApplied: () => {}, pushDelay: 5 });
+    srv.signIn('alice');
     await sync.init();
-    await sync.login('alice', 'pw-12345678', true);
-    expect(sync.state()).toMatchObject({ status: 'synced', user: { username: 'alice' } });
+    expect(sync.state()).toMatchObject({ status: 'synced', user: { name: 'alice' } });
     expect((srv.saves.get('1')!.data as LogicSave).progress.levels['1-1']!.stars).toBe(3);
     // 백업이 남는다
     expect(storage.getItem('logic-game:v1:progress-backup')).toContain('1-1');
@@ -180,15 +178,15 @@ describe('createSync', () => {
 
   it('다른 기기의 기록과 합친다 — 새 기기에서 로그인', async () => {
     const srv = fakeServer();
-    await srv.api.signup('bob', 'pw-12345678');
+    srv.signIn('bob');
     srv.remoteWrite('bob', { ...emptySave(), progress: prog({ '1-1': clear('1-1', 3), '1-2': clear('1-2', 3) }) });
     await srv.api.logout();
     // 새 기기에는 손님으로 깬 다른 레벨이 있다
     saveProgress(prog({ '1-1': clear('1-1', 1), '1-3': clear('1-3', 2) }));
     let applied = 0;
     const sync = createSync({ api: srv.api, onRemoteApplied: () => applied++, pushDelay: 5 });
+    srv.signIn('bob');
     await sync.init();
-    await sync.login('bob', 'pw-12345678', false);
     const p = loadProgress();
     expect(Object.keys(p.levels).sort()).toEqual(['1-1', '1-2', '1-3']);
     expect(p.levels['1-1']!.stars).toBe(3);
@@ -201,8 +199,8 @@ describe('createSync', () => {
   it('다시 열면 서버의 새 기록을 받아 온다', async () => {
     const srv = fakeServer();
     const s1 = createSync({ api: srv.api, onRemoteApplied: () => {}, pushDelay: 5 });
+    srv.signIn('carol');
     await s1.init();
-    await s1.login('carol', 'pw-12345678', true);
     s1.dispose();
     // 다른 기기에서 진행
     srv.remoteWrite('carol', { ...emptySave(), progress: prog({ '2-1': clear('2-1', 3) }) });
@@ -218,8 +216,8 @@ describe('createSync', () => {
   it('올리는 사이 다른 기기가 먼저 저장했으면(409) 합쳐서 다시 올린다', async () => {
     const srv = fakeServer();
     const sync = createSync({ api: srv.api, onRemoteApplied: () => {}, pushDelay: 5 });
+    srv.signIn('dan');
     await sync.init();
-    await sync.login('dan', 'pw-12345678', true);
     srv.remoteWrite('dan', { ...emptySave(), progress: prog({ '3-1': clear('3-1', 3) }) });
     saveProgress(prog({ '1-1': clear('1-1', 2) }));
     await wait(30);
@@ -233,8 +231,8 @@ describe('createSync', () => {
   it('서버가 꺼져 있으면 오프라인, 다시 켜지면 밀린 변경을 올린다', async () => {
     const srv = fakeServer();
     const sync = createSync({ api: srv.api, onRemoteApplied: () => {}, pushDelay: 5 });
+    srv.signIn('erin');
     await sync.init();
-    await sync.login('erin', 'pw-12345678', true);
     srv.setOnline(false);
     saveProgress(prog({ '1-1': clear('1-1', 3) }));
     await wait(30);
@@ -246,19 +244,31 @@ describe('createSync', () => {
     sync.dispose();
   });
 
-  it('잘못된 비밀번호는 오류를 던지고 손님 상태 유지, 로그아웃해도 로컬 기록은 남는다', async () => {
+  it('로그아웃해도 로컬 기록은 남고, 밀린 변경은 올린 뒤 나간다', async () => {
     const srv = fakeServer();
-    const sync = createSync({ api: srv.api, onRemoteApplied: () => {}, pushDelay: 5 });
+    const sync = createSync({ api: srv.api, onRemoteApplied: () => {}, pushDelay: 1000 });
+    srv.signIn('fay');
     await sync.init();
-    await sync.login('fay', 'pw-12345678', true);
     saveProgress(prog({ '1-1': clear('1-1', 3) }));
     await sync.logout();
     expect(sync.state()).toMatchObject({ status: 'guest', user: null });
     expect(loadProgress().levels['1-1']!.stars).toBe(3);
-    // 로그아웃 전에 밀린 변경도 올렸다
     expect((srv.saves.get('1')!.data as LogicSave).progress.levels['1-1']!.stars).toBe(3);
-    await expect(sync.login('fay', 'wrong-password', false)).rejects.toMatchObject({ code: 'invalid_credentials' });
+    expect(storage.getItem('logic-game:sync')).toBeNull();
+    sync.dispose();
+  });
+
+  it('계정 삭제: 서버 기록은 지우고 이 브라우저의 기록은 남긴다', async () => {
+    const srv = fakeServer();
+    const sync = createSync({ api: srv.api, onRemoteApplied: () => {}, pushDelay: 5 });
+    saveProgress(prog({ '1-1': clear('1-1', 2) }));
+    srv.signIn('gil');
+    await sync.init();
+    expect(srv.saves.size).toBe(1);
+    await sync.deleteAccount();
+    expect(srv.saves.size).toBe(0);
     expect(sync.state().status).toBe('guest');
+    expect(loadProgress().levels['1-1']!.stars).toBe(2);
     sync.dispose();
   });
 });

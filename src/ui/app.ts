@@ -33,7 +33,7 @@ import { sandboxPanel } from './sandboxPanel';
 import { mountWorkspace } from './workspace';
 import { mountProgram } from './programScreen';
 import { showAchievements } from './achievementsModal';
-import { accountButton } from './accountModal';
+import { accountButton, flash, openLogin } from './accountModal';
 import { createSync } from '../storage/sync';
 
 type Route = { name: 'map' } | { name: 'level'; id: string } | { name: 'sandbox'; share?: string };
@@ -322,5 +322,19 @@ export function startApp(root: HTMLElement): void {
 
   window.addEventListener('hashchange', render);
   render();
-  void sync.init();
+
+  // 소셜 로그인에서 돌아온 경우 (?auth=ok|error|cancelled): 결과를 알리고 주소에서 지운다
+  const authResult = new URLSearchParams(location.search).get('auth');
+  if (authResult) {
+    const params = new URLSearchParams(location.search);
+    params.delete('auth');
+    const qs = params.toString();
+    history.replaceState(null, '', location.pathname + (qs ? `?${qs}` : '') + location.hash);
+  }
+  void sync.init().then(() => {
+    const user = sync.state().user;
+    if (authResult === 'ok' && user) flash(t('account.welcome', { name: user.name }));
+    else if (authResult === 'cancelled') flash(t('account.loginCancelled'), 'error');
+    else if (authResult) openLogin({ error: t('account.err.login') });
+  });
 }

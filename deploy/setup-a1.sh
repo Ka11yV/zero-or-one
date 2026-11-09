@@ -39,13 +39,16 @@ echo "== 4/4 설정(.env) 만들기"
 cd "$DIR/deploy"
 if [ ! -f .env ]; then
   umask 077
-  printf 'SITE_ADDRESS=%s\nPOSTGRES_PASSWORD=%s\n' "$SITE" "$(openssl rand -hex 24)" > .env
-  echo "deploy/.env 생성 (DB 비밀번호는 이 파일에만 있습니다)"
+  {
+    printf 'SITE_ADDRESS=%s\nPOSTGRES_PASSWORD=%s\nCOOKIE_SECRET=%s\n' "$SITE" "$(openssl rand -hex 24)" "$(openssl rand -hex 32)"
+    printf '\n# 소셜 로그인 키 (docs/DEPLOY_A1.md 4단계)\nGOOGLE_CLIENT_ID=\nGOOGLE_CLIENT_SECRET=\nGITHUB_CLIENT_ID=\nGITHUB_CLIENT_SECRET=\n'
+  } > .env
+  echo "deploy/.env 생성 (DB 비밀번호·쿠키 키는 이 파일에만 있습니다)"
 else
   echo "deploy/.env가 이미 있어 그대로 둡니다"
 fi
 
 echo
-echo "완료. 이제 실행:"
+echo "완료. 다음: deploy/.env에 Google/GitHub 로그인 키를 넣고 (docs/DEPLOY_A1.md 4단계) 실행:"
 echo "  cd $DIR/deploy && sudo docker compose up -d --build"
 echo "그 뒤 https://$SITE 접속 (첫 인증서 발급에 30초쯤 걸릴 수 있음)"

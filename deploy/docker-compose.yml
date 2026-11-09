@@ -25,9 +25,14 @@ services:
       DATABASE_URL: postgres://zoo:${POSTGRES_PASSWORD}@db:5432/zoo
       HOST: 0.0.0.0
       PORT: "8787"
-      COOKIE_SECURE: ${COOKIE_SECURE:-1}
+      PUBLIC_URL: ${PUBLIC_URL:-https://${SITE_ADDRESS}}
+      COOKIE_SECRET: ${COOKIE_SECRET:?deploy/.env에 COOKIE_SECRET을 넣으세요}
       TRUST_PROXY: "1"
-      ALLOWED_ORIGIN: ${ALLOWED_ORIGIN:-https://${SITE_ADDRESS}}
+      # 소셜 로그인: 넣은 것만 버튼으로 나타난다 (docs/DEPLOY_A1.md 4단계)
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
     depends_on:
       db:
         condition: service_healthy
