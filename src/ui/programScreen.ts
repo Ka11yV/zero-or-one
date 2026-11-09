@@ -348,7 +348,10 @@ export function mountProgram(root: HTMLElement, cfg: ProgramScreenConfig): { dis
   const renderBody = () => {
     body.textContent = '';
     if (tab === 'brief') {
-      body.append(h('h2', { class: 'level-title' }, `${level.id} · ${text().title}`), rich(text().briefing));
+      body.append(h('h2', { class: 'level-title' }, `${level.id} · ${text().title}`));
+      const why = text().why;
+      if (why) body.append(h('aside', { class: 'why-card' }, h('h3', {}, t('level.why')), rich(why)));
+      body.append(rich(text().briefing));
       body.append(
         h(
           'ul',

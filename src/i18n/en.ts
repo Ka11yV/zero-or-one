@@ -333,6 +333,8 @@ export const en: Record<MessageKey, string> = {
   'coach.condition': 'Almost there! Every wrong row has **{cond}**. Trace what your circuit does in that case.',
   'coach.condValue': '{pin} = {v}',
   'coach.condBit': 'bit {bit} of {pin} = {v}',
+  'device.wheel': 'Number dial',
+  'device.wheelHint': 'A 4-bit number wraps like a clock: after 15 comes 0. Outside: 0–15. Inside: the same bits read as signed (−8 to 7).',
   'palette.title': 'Parts',
   'palette.io': 'I/O',
   'palette.gates': 'Gates',

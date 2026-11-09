@@ -24,10 +24,30 @@ export const chapter3: Chapter = {
       text: {
         ko: {
           title: '반가산기',
+          why:
+            '🧮 계산기, 💰 계좌 잔액, 🎮 점수판 — 컴퓨터가 하는 계산은 전부 **덧셈** 에서 시작해요.\n' +
+            '그 덧셈의 가장 작은 조각, **한 자리 더하기** 를 만들 차례예요.',
           briefing:
-            '**2진수** 는 자리마다 0과 1만 씁니다. 자리값은 오른쪽부터 1, 2, 4, 8, … 로 두 배씩 커집니다. 예: 1011₂ = 8 + 2 + 1 = 11.\n\n' +
-            '한 자리 덧셈은 0+0=0, 0+1=1, 1+0=1, 그리고 **1+1=10₂**(2) — 일의 자리 0, 올림 1입니다.\n\n' +
-            '두 비트 a, b를 더해 **sum**(일의 자리)과 **carry**(올림)를 내보내는 **반가산기** 를 만드세요.',
+            '**질문**\n' +
+            '지금까지 만든 건 "참/거짓" 게이트뿐이에요. 이걸로 **숫자를 더할** 수 있을까요?\n' +
+            '\n' +
+            '**2진수**\n' +
+            '자리값이 오른쪽부터 1, 2, 4, 8, … 로 두 배씩 커져요. 예: `1011` = 8 + 2 + 1 = 11\n' +
+            '\n' +
+            '**한 자리 덧셈**\n' +
+            '- `0 + 0 = 0`\n' +
+            '- `0 + 1 = 1`, `1 + 0 = 1`\n' +
+            '- `1 + 1 = 10` (2) → 이 자리는 **0**, 윗자리로 **1을 올림**\n' +
+            '\n' +
+            '**할 일**\n' +
+            '두 비트 a, b를 더해 내보내세요.\n' +
+            '- **sum** = 이 자리 값\n' +
+            '- **carry** = 올림',
+          coach: {
+            swapped: '**sum** 과 **carry** 가 서로 바뀌었어요. 1 + 1일 때 이 자리(sum)는 0, 올림(carry)이 1이에요.',
+            'inverted@carry': 'carry가 정반대예요. 올림은 **둘 다 1일 때만** 생겨요 — NAND가 아니라 AND!',
+            'inverted@sum': 'sum이 정반대예요. sum은 **둘이 다를 때** 1이에요.',
+          },
           hints: [
             'sum과 carry의 진리표를 따로 적어 보세요. 1장에서 본 표와 똑같이 생기지 않았나요?',
             'sum은 "둘이 다를 때 1" — XOR. carry는 "둘 다 1일 때" — AND.',
@@ -44,10 +64,30 @@ export const chapter3: Chapter = {
         },
         en: {
           title: 'Half Adder',
+          why:
+            '🧮 Calculators, 💰 bank balances, 🎮 scoreboards — every calculation a computer does starts with **addition**.\n' +
+            'Time to build its smallest piece: **adding one digit**.',
           briefing:
-            '**Binary** uses only 0 and 1 in each place. Place values double from the right: 1, 2, 4, 8, … For example 1011₂ = 8 + 2 + 1 = 11.\n\n' +
-            'One-digit addition: 0+0=0, 0+1=1, 1+0=1, and **1+1=10₂** (two) — ones digit 0, carry 1.\n\n' +
-            'Build a **half adder** that adds bits a and b and outputs **sum** (ones digit) and **carry**.',
+            '**The question**\n' +
+            'So far you have only true/false gates. Can they **add numbers**?\n' +
+            '\n' +
+            '**Binary**\n' +
+            'Place values double from the right: 1, 2, 4, 8, … Example: `1011` = 8 + 2 + 1 = 11\n' +
+            '\n' +
+            '**One-digit addition**\n' +
+            '- `0 + 0 = 0`\n' +
+            '- `0 + 1 = 1`, `1 + 0 = 1`\n' +
+            '- `1 + 1 = 10` (two) → this digit is **0**, **carry 1** up\n' +
+            '\n' +
+            '**Your job**\n' +
+            'Add bits a and b and output:\n' +
+            '- **sum** = this digit\n' +
+            '- **carry** = the carry',
+          coach: {
+            swapped: '**sum** and **carry** are swapped. For 1 + 1 this digit (sum) is 0 and the carry is 1.',
+            'inverted@carry': 'carry is the exact opposite. A carry only happens **when both are 1** — AND, not NAND!',
+            'inverted@sum': 'sum is the exact opposite. sum is 1 **when the bits differ**.',
+          },
           hints: [
             'Write the truth tables for sum and carry separately. Don’t they look like tables from Chapter 1?',
             'sum is "1 when they differ" — XOR. carry is "1 when both are 1" — AND.',
@@ -87,9 +127,23 @@ export const chapter3: Chapter = {
       text: {
         ko: {
           title: '전가산기',
+          why:
+            '✏️ 종이에 `27 + 15` 를 계산할 때, 일의 자리에서 올린 1을 십의 자리에서 **같이** 더하죠?\n' +
+            '2진수도 똑같아요. 아랫자리에서 올라온 올림까지 더하는 **한 자리 계산기** 가 필요해요.',
           briefing:
-            '**전가산기** 는 세 비트 a, b, 그리고 아랫자리에서 올라온 **cin** 을 더합니다. 결과는 0~3이므로 sum(일의 자리)과 cout(올림) 두 비트로 나타냅니다.\n\n' +
-            '예: 1 + 1 + 1 = 3 = 11₂ → sum 1, cout 1.',
+            '**곤란한 상황**\n' +
+            '반가산기는 두 비트만 더해요. 그런데 여러 자리 덧셈에서는 **아랫자리에서 올라온 올림** 도 같이 더해야 해요.\n' +
+            '\n' +
+            '**할 일**\n' +
+            '세 비트 a, b, **cin**(올라온 올림)을 더하세요. 결과는 0~3이라 두 비트로 나타내요.\n' +
+            '- **sum** = 이 자리 값\n' +
+            '- **cout** = 윗자리로 보낼 올림\n' +
+            '\n' +
+            '예: `1 + 1 + 1 = 3 = 11` → sum 1, cout 1',
+          coach: {
+            'condition:cin=1': '**cin = 1일 때만** 틀려요. 올라온 올림(cin)을 더하는 단계가 빠지지 않았나요?',
+            swapped: '**sum** 과 **cout** 이 바뀐 것 같아요. 두 출력 선을 바꿔 보세요.',
+          },
           hints: [
             '세 수를 더하는 건 "두 수를 더하고, 그 결과에 세 번째를 더하는 것" 과 같습니다.',
             '반가산기 2개를 이어 보세요: HA1(a, b) → HA2(HA1.sum, cin). 최종 sum은 HA2.sum.',
@@ -106,9 +160,23 @@ export const chapter3: Chapter = {
         },
         en: {
           title: 'Full Adder',
+          why:
+            '✏️ When you add `27 + 15` on paper, you add the carried 1 **together** with the tens digit, right?\n' +
+            'Binary works the same. You need a **one-digit adder** that also adds the carry coming up from below.',
           briefing:
-            'A **full adder** adds three bits: a, b, and **cin**, the carry coming up from the digit below. The result is 0–3, so it takes two bits: sum (ones) and cout (carry).\n\n' +
-            'Example: 1 + 1 + 1 = 3 = 11₂ → sum 1, cout 1.',
+            '**The problem**\n' +
+            'A half adder adds only two bits. But multi-digit addition also has to add **the carry coming up from the digit below**.\n' +
+            '\n' +
+            '**Your job**\n' +
+            'Add three bits a, b and **cin** (the incoming carry). The result is 0–3, so it takes two bits:\n' +
+            '- **sum** = this digit\n' +
+            '- **cout** = the carry to send up\n' +
+            '\n' +
+            'Example: `1 + 1 + 1 = 3 = 11` → sum 1, cout 1',
+          coach: {
+            'condition:cin=1': 'Wrong **only when cin = 1**. Is the step that adds the incoming carry (cin) missing?',
+            swapped: '**sum** and **cout** look swapped. Try exchanging the two output wires.',
+          },
           hints: [
             'Adding three numbers is the same as "add two, then add the third to the result".',
             'Chain two half adders: HA1(a, b) → HA2(HA1.sum, cin). The final sum is HA2.sum.',
@@ -150,9 +218,24 @@ export const chapter3: Chapter = {
       text: {
         ko: {
           title: '4비트 가산기',
+          why:
+            '🔢 `9 + 5 = 14` 같은 진짜 숫자 덧셈은 한 자리로는 못 해요.\n' +
+            '전가산기를 줄줄이 이으면 몇 자리든 더할 수 있어요 — CPU의 덧셈, 주소 계산, "다음 명령으로 +1" 이 전부 이 회로예요.',
           briefing:
-            '이제 0~15 사이의 두 수를 더합니다. a, b는 **4비트 버스**, 결과 sum도 4비트, 16 이상이 되면 넘친 자리는 **cout** 으로 나옵니다.\n\n' +
-            '종이에 덧셈하듯, 일의 자리부터 올림을 다음 자리로 넘기세요. 입력값은 오른쪽 패널의 숫자 칸에서 바꿀 수 있습니다.',
+            '**할 일**\n' +
+            '0~15 사이의 두 수를 더하세요.\n' +
+            '- **a, b** = 4비트 버스\n' +
+            '- **sum** = 4비트 결과\n' +
+            '- **cout** = 16 이상이 되어 넘친 자리\n' +
+            '\n' +
+            '**아이디어**\n' +
+            '종이에 덧셈하듯 **일의 자리부터**, 올림을 다음 자리로 넘겨요.\n' +
+            '\n' +
+            '입력값은 오른쪽 패널의 숫자 칸에서 바꿀 수 있어요.',
+          coach: {
+            'condition:cin=1': '**cin = 1일 때만** 틀려요. 맨 아랫자리 전가산기의 cin에 회로의 **cin** 을 이었나요?',
+            'constant@cout': 'cout이 늘 같아요. **맨 윗자리(4번째) 전가산기의 cout** 을 회로의 cout으로 내보내세요.',
+          },
           hints: [
             '각 자리(비트)마다 전가산기 하나. 자리 i의 올림은 자리 i+1의 cin으로 갑니다.',
             '버스 분리 4로 a, b를 비트로 나누고, 전가산기 4개의 sum을 버스 합치기 4로 모으세요.',
@@ -169,9 +252,24 @@ export const chapter3: Chapter = {
         },
         en: {
           title: '4-bit Adder',
+          why:
+            '🔢 Real sums like `9 + 5 = 14` need more than one digit.\n' +
+            'Chain full adders and you can add any number of digits — CPU addition, address math and "+1 to the next instruction" all use this circuit.',
           briefing:
-            'Now add two numbers from 0 to 15. a and b are **4-bit buses**, sum is 4 bits too, and anything 16 or above overflows out as **cout**.\n\n' +
-            'Just like adding on paper, start at the ones place and pass each carry to the next. Change input values with the number fields in the right panel.',
+            '**Your job**\n' +
+            'Add two numbers from 0 to 15.\n' +
+            '- **a, b** = 4-bit buses\n' +
+            '- **sum** = the 4-bit result\n' +
+            '- **cout** = the overflow when the total reaches 16 or more\n' +
+            '\n' +
+            '**The idea**\n' +
+            'Like adding on paper: **start at the ones place** and pass each carry to the next.\n' +
+            '\n' +
+            'Change input values with the number fields in the right panel.',
+          coach: {
+            'condition:cin=1': 'Wrong **only when cin = 1**. Is the circuit’s **cin** wired to the lowest full adder’s cin?',
+            'constant@cout': 'cout never changes. Send the **top (4th) full adder’s cout** out as the circuit’s cout.',
+          },
           hints: [
             'One full adder per place (bit). The carry from place i goes into cin of place i+1.',
             'Split a and b into bits with Split 4, and gather the four sums with Merge 4.',
@@ -202,6 +300,103 @@ export const chapter3: Chapter = {
       },
     },
     {
+      id: '3-3b',
+      chapter: 3,
+      inputs: [pin('in:4')],
+      outputs: [pin('out:4')],
+      // 게이트는 없음: 덧셈 회로만으로 빼기를 "발견" 하는 레벨
+      allowedChips: ['ADD4', ...CONST, ...BUS],
+      test: autoTest([pin('in:4')], (x) => [(x + 15) & 15]),
+      stars: { maxNand: 52 },
+      devices: { wheel: ['in', 'out'] },
+      text: {
+        ko: {
+          title: '시계 산수: 덧셈으로 1 빼기',
+          why:
+            '⏰ 시계에서 **1시간 전** 은 **11시간 후** 와 같아요.\n' +
+            '🚗 자동차 주행거리계가 `0000` 에서 거꾸로 돌면 `9999` 가 돼요.\n' +
+            '4비트 수도 똑같이 빙글 돌아요. 이 성질이 다음 레벨 **음수** 의 비밀이에요.',
+          briefing:
+            '**곤란한 상황**\n' +
+            '숫자를 1 줄이는 버튼이 필요해요. 그런데 손에 있는 건 **덧셈 회로(ADD4)와 상수** 뿐이에요. 게이트도 없어요!\n' +
+            '\n' +
+            '**질문**\n' +
+            '덧셈만으로 1을 뺄 수 있을까요?\n' +
+            '\n' +
+            '**알고 있는 사실**\n' +
+            '- 4비트 수는 `15` 다음에 `0` 으로 돌아가요: `1111 + 1 = 0000`\n' +
+            '- 아래 **숫자 다이얼** 을 보세요. 시계와 똑같이 생겼죠?\n' +
+            '\n' +
+            '**할 일**\n' +
+            'in을 받아 **in − 1** 을 내보내세요. (in = 0이면 15)',
+          coach: {
+            passthrough: '입력이 그대로 나와요. **ADD4의 b** 에 어떤 수를 더할지 정해야 해요. (b = `1111` 이면서 cin = 1이면 16을 더해 제자리예요!)',
+            'offset+1': '1을 빼야 하는데 오히려 **1을 더하고** 있어요. 다이얼에서 바늘을 **거꾸로** 한 칸 돌리려면 앞으로 몇 칸 돌려야 할까요?',
+            'offset+2': '2를 더하고 있어요. 앞으로 **15칸** 돌리면 거꾸로 1칸이에요.',
+          },
+          hints: [
+            '시계는 12시간을 돌면 제자리예요. 4비트 다이얼은 몇 칸을 돌면 제자리일까요?',
+            '16칸 돌면 제자리 → **15칸 돌면 한 칸 뒤**. 즉 15를 더하면 1을 뺀 것과 같아요!',
+            'ADD4.a = in, ADD4.b = 상수 1 네 개를 버스 합치기 4로 묶은 `1111`, ADD4.cin = 상수 0, sum → out.',
+          ],
+          principle: {
+            title: '더하기로 빼기',
+            body:
+              '4비트 세계에서는 **16 = 0** 이에요(16칸 돌면 제자리). 그래서 15를 더하면 16 − 1, 즉 **1을 빼는 것** 과 같아요.\n\n' +
+              '일반적으로 **x를 빼고 싶으면 16 − x를 더하면** 돼요. 이 "16 − x" 가 바로 다음 레벨에서 만들 **−x(2의 보수)** 예요.',
+            formula: 'a − 1 ≡ a + 15 (mod 16)',
+            usage: 'CPU의 감소(DEC) 명령, 반복문의 카운트다운, 그리고 모든 뺄셈의 출발점.',
+          },
+        },
+        en: {
+          title: 'Clock Math: Subtract 1 by Adding',
+          why:
+            '⏰ On a clock, **1 hour ago** is the same as **11 hours later**.\n' +
+            '🚗 A car odometer rolling back from `0000` shows `9999`.\n' +
+            '4-bit numbers wrap around the same way. This is the secret behind **negative numbers** in the next level.',
+          briefing:
+            '**The problem**\n' +
+            'You need a button that decreases a number by 1. But all you have is **an adder (ADD4) and constants**. No gates!\n' +
+            '\n' +
+            '**The question**\n' +
+            'Can you subtract 1 using only addition?\n' +
+            '\n' +
+            '**What you know**\n' +
+            '- 4-bit numbers wrap from `15` back to `0`: `1111 + 1 = 0000`\n' +
+            '- Look at the **number dial** below. Doesn’t it look like a clock?\n' +
+            '\n' +
+            '**Your job**\n' +
+            'Take in and output **in − 1**. (When in = 0, output 15.)',
+          coach: {
+            passthrough: 'The input comes straight out. Decide what number to add on **ADD4’s b**. (b = `1111` with cin = 1 adds 16 — right back where you started!)',
+            'offset+1': 'You are **adding 1** instead of subtracting. To turn the dial **back** one step, how many steps forward do you need?',
+            'offset+2': 'You are adding 2. Turning **15 steps forward** is one step back.',
+          },
+          hints: [
+            'A clock is back where it started after 12 hours. How many steps bring the 4-bit dial back around?',
+            '16 steps = back to start → **15 steps = one step back**. Adding 15 is the same as subtracting 1!',
+            'ADD4.a = in, ADD4.b = four Const 1s merged into `1111` with Merge 4, ADD4.cin = Const 0, sum → out.',
+          ],
+          principle: {
+            title: 'Subtracting by adding',
+            body:
+              'In the 4-bit world **16 = 0** (16 steps around is back to start). So adding 15 is adding 16 − 1, which is the same as **subtracting 1**.\n\n' +
+              'In general, **to subtract x, add 16 − x**. That "16 − x" is exactly the **−x (two’s complement)** you will build next level.',
+            formula: 'a − 1 ≡ a + 15 (mod 16)',
+            usage: 'The CPU’s decrement (DEC), loop countdowns — and the starting point of all subtraction.',
+          },
+        },
+      },
+      solution: (b) => {
+        const add = b.add('ADD4');
+        const m = b.add('MERGE4');
+        const one = b.add('CONST1');
+        const zero = b.add('CONST0');
+        for (let i = 0; i < 4; i++) b.wire(`${one}.out`, `${m}.b${i}`);
+        b.wire('in', `${add}.a`).wire(`${m}.out`, `${add}.b`).wire(`${zero}.out`, `${add}.cin`).wire(`${add}.sum`, 'out');
+      },
+    },
+    {
       id: '3-4',
       chapter: 3,
       inputs: [pin('in:4')],
@@ -210,6 +405,8 @@ export const chapter3: Chapter = {
       test: autoTest([pin('in:4')], (x) => [(16 - x) & 15]),
       unlocks: { chipId: 'NEG4' },
       stars: { maxNand: 56 },
+      signedPins: ['out'],
+      devices: { wheel: ['in', 'out'] },
       text: {
         ko: {
           title: '음수 만들기 (2의 보수)',
@@ -225,7 +422,7 @@ export const chapter3: Chapter = {
             '\n' +
             '**아이디어**\n' +
             '음수를 더하면 빼기가 돼요: `a − b = a + (−b)`\n' +
-            '4비트 수는 시계처럼 15 다음에 0으로 돌아가요. 그래서 **x에 더해 0이 되는 수** 가 −x예요.\n' +
+            '방금 **15를 더해서 1을 뺐죠?** 그러니 −1은 `1111` (15). 마찬가지로 **x에 더해 0(=16)이 되는 수** 가 −x예요.\n' +
             '\n' +
             '**요령: 뒤집고 +1 (2의 보수)**\n' +
             '- 3 = `0011`\n' +
@@ -270,7 +467,7 @@ export const chapter3: Chapter = {
             '\n' +
             '**The idea**\n' +
             'Adding a negative is subtracting: `a − b = a + (−b)`\n' +
-            '4-bit numbers wrap like a clock: after 15 comes 0. So **the number that adds to x to give 0** is −x.\n' +
+            'You just **subtracted 1 by adding 15**, so −1 is `1111` (15). Likewise **the number that adds to x to give 0 (=16)** is −x.\n' +
             '\n' +
             '**The recipe: flip, then +1 (two’s complement)**\n' +
             '- 3 = `0011`\n' +
@@ -326,6 +523,7 @@ export const chapter3: Chapter = {
       test: autoTest(A4B4, (a, b) => [(a - b) & 15, a >= b ? 1 : 0]),
       unlocks: { chipId: 'SUB4' },
       stars: { maxNand: 56 },
+      devices: { wheel: ['a', 'b', 'diff'] },
       text: {
         ko: {
           title: '4비트 감산기',
@@ -531,6 +729,8 @@ export const chapter3: Chapter = {
         return [s, sign(a) === sign(b) && sign(s) !== sign(a) ? 1 : 0];
       }),
       stars: { maxNand: 63 },
+      signedPins: ['a', 'b', 'sum'],
+      devices: { wheel: ['a', 'b', 'sum'] },
       text: {
         ko: {
           title: '보스: 오버플로 감지기',

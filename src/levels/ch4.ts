@@ -61,9 +61,23 @@ export const chapter4: Chapter = {
       card(
         {
           title: '8비트 NOT',
+          why:
+            '🎨 사진 앱의 **색 반전** — 픽셀 색값(0~255)의 비트를 모두 뒤집으면 밝은 곳과 어두운 곳이 뒤바뀌어요.\n' +
+            '🧮 3장의 −x(2의 보수)도 첫 단계가 "모두 뒤집기"였죠. 이제 8비트로 키워 −128 ~ 127까지 다뤄요.',
           briefing:
-            '지금부터는 **8비트** 를 한 덩어리로 다룹니다. 이런 비트 묶음을 **워드(word)** 라고 하며, 8비트는 0~255(부호 있으면 -128~127)를 나타냅니다.\n\n' +
-            '8비트 입력의 **모든 비트를 뒤집는** 칩을 만드세요. 같은 구조를 반복할 때는 **⌘C / ⌘V(복사/붙여넣기)** 와 **⌘D(복제)** 가 큰 도움이 됩니다.',
+            '**곤란한 상황**\n' +
+            '4비트로는 0~15밖에 못 세요. 점수, 글자, 색을 담기엔 너무 작아요.\n' +
+            '\n' +
+            '**아이디어**\n' +
+            '8비트를 한 덩어리로 다뤄요. 이런 비트 묶음을 **워드(word)** 라고 해요.\n' +
+            '- 8비트 = 0~255 (부호 있으면 −128~127)\n' +
+            '\n' +
+            '**할 일**\n' +
+            '8비트 입력의 **모든 비트를 뒤집는** 칩을 만드세요.\n' +
+            '같은 구조를 반복할 때는 **⌘C / ⌘V(복사/붙여넣기)** 와 **⌘D(복제)** 가 큰 도움이 돼요.',
+          coach: {
+            passthrough: '입력이 그대로 나오고 있어요. 비트 하나하나가 **NOT을 거쳐서** 합치기로 가도록 연결해 보세요.',
+          },
           hints: [
             '버스는 여러 가닥의 선을 한 줄로 묶어 그린 것뿐입니다. 비트 하나하나는 서로 독립적이에요.',
             '버스 분리 8 → NOT 8개 → 버스 합치기 8.',
@@ -80,9 +94,23 @@ export const chapter4: Chapter = {
         },
         {
           title: '8-bit NOT',
+          why:
+            '🎨 **Invert colors** in a photo app — flipping every bit of a pixel’s value (0–255) swaps light and dark.\n' +
+            '🧮 Chapter 3’s −x (two’s complement) also started with "flip every bit". Now you scale it up to 8 bits: −128 to 127.',
           briefing:
-            'From now on you handle **8 bits** as one unit. A bundle of bits like this is a **word**; 8 bits represent 0–255 (or -128–127 signed).\n\n' +
-            'Build a chip that **flips every bit** of an 8-bit input. When repeating a structure, **⌘C / ⌘V (copy/paste)** and **⌘D (duplicate)** help a lot.',
+            '**The problem**\n' +
+            '4 bits only count to 15 — far too small for scores, letters or colors.\n' +
+            '\n' +
+            '**The idea**\n' +
+            'Handle 8 bits as one unit. A bundle of bits like this is a **word**.\n' +
+            '- 8 bits = 0–255 (or −128–127 signed)\n' +
+            '\n' +
+            '**Your job**\n' +
+            'Build a chip that **flips every bit** of an 8-bit input.\n' +
+            'When repeating a structure, **⌘C / ⌘V (copy/paste)** and **⌘D (duplicate)** help a lot.',
+          coach: {
+            passthrough: 'The input comes straight out. Route each bit **through a NOT** on its way to the merger.',
+          },
           hints: [
             'A bus is just several wires drawn as one line. Each bit is independent.',
             'Split 8 → 8 NOTs → Merge 8.',
@@ -102,7 +130,16 @@ export const chapter4: Chapter = {
       card(
         {
           title: '8비트 AND',
-          briefing: '두 8비트 값의 **같은 자리끼리 AND** 하세요. out의 i번 비트 = a의 i번 비트 AND b의 i번 비트.',
+          why:
+            '📶 공유기는 "같은 네트워크인가?"를 판단할 때 **IP 주소 AND 서브넷 마스크** 를 계산해요.\n' +
+            '🎛 여러 켜짐/꺼짐 표시가 모인 바이트에서 원하는 비트만 남길 때(마스크)도 AND예요.',
+          briefing:
+            '**할 일**\n' +
+            '두 8비트 값의 **같은 자리끼리 AND** 하세요.\n' +
+            '- out의 i번 비트 = a의 i번 비트 AND b의 i번 비트',
+          coach: {
+            'constant@out': 'out이 늘 같은 값이에요. **b 버스** 도 연결됐나요? 연결되지 않은 입력은 0으로 읽혀서 AND 결과가 0이 돼요.',
+          },
           hints: ['NOT8과 같은 구조인데 입력이 둘입니다.', '버스 분리 8 두 개, AND 8개, 버스 합치기 8 하나.', 'a.bi, b.bi → AND → merge.bi (i = 0…7).'],
           principle: {
             title: '마스크로 비트 골라내기',
@@ -115,7 +152,16 @@ export const chapter4: Chapter = {
         },
         {
           title: '8-bit AND',
-          briefing: 'AND two 8-bit values **place by place**. Bit i of out = bit i of a AND bit i of b.',
+          why:
+            '📶 A router decides "same network?" by computing **IP address AND subnet mask**.\n' +
+            '🎛 Keeping only the bits you want from a byte full of on/off flags (masking) is also AND.',
+          briefing:
+            '**Your job**\n' +
+            'AND two 8-bit values **place by place**.\n' +
+            '- bit i of out = bit i of a AND bit i of b',
+          coach: {
+            'constant@out': 'out never changes. Is the **b bus** connected too? An unconnected input reads as 0, so AND gives 0.',
+          },
           hints: ['Same structure as NOT8, but with two inputs.', 'Two Split 8s, eight ANDs, one Merge 8.', 'a.bi, b.bi → AND → merge.bi (i = 0…7).'],
           principle: {
             title: 'Masking bits',
@@ -131,7 +177,16 @@ export const chapter4: Chapter = {
       card(
         {
           title: '8비트 OR',
-          briefing: '같은 자리끼리 **OR** 하는 8비트 칩입니다. AND8을 만들 때 쓴 구조를 그대로 복사해서 게이트만 바꿔도 됩니다.',
+          why:
+            '🔐 파일 권한(읽기·쓰기·실행)처럼 여러 켜짐 표시를 한 바이트에 모을 때, OR로 원하는 비트를 **켜요**.\n' +
+            '🔔 알림이 하나라도 있으면 켜지는 빨간 점 — "하나라도"가 바로 OR예요.',
+          briefing:
+            '**할 일**\n' +
+            '같은 자리끼리 **OR** 하는 8비트 칩을 만드세요.\n' +
+            'AND8을 만들 때 쓴 구조를 그대로 복사해서 게이트만 바꿔도 돼요.',
+          coach: {
+            passthrough: 'out에 입력 하나가 그대로 나와요. **b 버스** 가 연결되지 않은 것 같아요 (연결 안 된 입력은 0이라 x OR 0 = x).',
+          },
           hints: ['AND8과 무엇이 다를까요? 게이트 종류뿐입니다.', '버스 분리 8 ×2, OR ×8, 버스 합치기 8.', 'a.bi, b.bi → OR → merge.bi.'],
           principle: {
             title: '비트 켜기',
@@ -142,7 +197,16 @@ export const chapter4: Chapter = {
         },
         {
           title: '8-bit OR',
-          briefing: 'An 8-bit chip that ORs **place by place**. You can copy your AND8 structure and just swap the gates.',
+          why:
+            '🔐 Packing several on/off flags into one byte (like read/write/execute permissions), you use OR to **turn bits on**.\n' +
+            '🔔 The red dot that lights up if there is **any** notification — "any" is exactly OR.',
+          briefing:
+            '**Your job**\n' +
+            'Build an 8-bit chip that ORs **place by place**.\n' +
+            'You can copy your AND8 structure and just swap the gates.',
+          coach: {
+            passthrough: 'One input comes straight out. The **b bus** seems unconnected (an unconnected input is 0, and x OR 0 = x).',
+          },
           hints: ['How does this differ from AND8? Only the gate type.', 'Split 8 ×2, OR ×8, Merge 8.', 'a.bi, b.bi → OR → merge.bi.'],
           principle: {
             title: 'Turning bits on',
@@ -156,7 +220,17 @@ export const chapter4: Chapter = {
       card(
         {
           title: '8비트 XOR',
-          briefing: '같은 자리끼리 **XOR** 하는 8비트 칩입니다. 이 칩은 이 장의 보스에서 핵심 역할을 합니다.',
+          why:
+            '🔒 같은 키로 두 번 XOR하면 원래대로 돌아와요 — 가장 단순한 **암호화** 예요.\n' +
+            '💾 RAID 5 저장 장치는 XOR로 만든 패리티 덕분에 디스크 하나가 고장 나도 데이터를 되살려요.\n' +
+            '이 칩은 이 장 보스에서 **"뺄셈 스위치"** 가 돼요.',
+          briefing:
+            '**할 일**\n' +
+            '같은 자리끼리 **XOR** 하는 8비트 칩을 만드세요.\n' +
+            'AND8·OR8과 같은 구조예요. 이 칩은 이 장의 보스에서 핵심 역할을 해요.',
+          coach: {
+            passthrough: 'out에 입력 하나가 그대로 나와요. **b 버스** 가 연결되지 않은 것 같아요 (x XOR 0 = x).',
+          },
           hints: ['AND8, OR8과 같은 구조입니다.', '버스 분리 8 ×2, XOR ×8, 버스 합치기 8.', 'a.bi, b.bi → XOR → merge.bi.'],
           principle: {
             title: '조건부 뒤집기',
@@ -169,7 +243,17 @@ export const chapter4: Chapter = {
         },
         {
           title: '8-bit XOR',
-          briefing: 'An 8-bit chip that XORs **place by place**. It plays the key role in this chapter’s boss.',
+          why:
+            '🔒 XOR twice with the same key and you are back where you started — the simplest **encryption**.\n' +
+            '💾 RAID 5 storage rebuilds a failed disk from XOR parity.\n' +
+            'In this chapter’s boss, this chip becomes the **"subtract switch"**.',
+          briefing:
+            '**Your job**\n' +
+            'Build an 8-bit chip that XORs **place by place**.\n' +
+            'Same structure as AND8 and OR8. It plays the key role in this chapter’s boss.',
+          coach: {
+            passthrough: 'One input comes straight out. The **b bus** seems unconnected (x XOR 0 = x).',
+          },
           hints: ['Same structure as AND8 and OR8.', 'Split 8 ×2, XOR ×8, Merge 8.', 'a.bi, b.bi → XOR → merge.bi.'],
           principle: {
             title: 'Conditional flipping',
@@ -193,7 +277,18 @@ export const chapter4: Chapter = {
       text: {
         ko: {
           title: '8비트 MUX',
-          briefing: 'sel 하나로 **8비트 값 a 또는 b 전체** 를 고르는 MUX입니다. sel = 0 → a, sel = 1 → b.',
+          why:
+            '🔀 CPU 안에는 "계산 결과를 쓸까, 메모리에서 읽은 값을 쓸까?" 같은 **갈림길** 이 아주 많아요.\n' +
+            '8가닥 데이터를 스위치 **하나** 로 한꺼번에 바꾸는 칩이에요.',
+          briefing:
+            '**할 일**\n' +
+            'sel 하나로 **8비트 값 a 또는 b 전체** 를 고르세요.\n' +
+            '- sel = 0 → out = a\n' +
+            '- sel = 1 → out = b',
+          coach: {
+            passthrough: 'out에 입력 하나만 계속 나와요. sel이 MUX 8개 **모두** 의 sel 핀에 연결됐나요?',
+            'condition:sel=1': '**sel = 1일 때만** 틀려요. sel이 MUX 8개 중 **일부에만** 연결된 것 같아요. 모든 MUX의 sel에 같은 신호를 이어 주세요(팬아웃).',
+          },
           hints: [
             '비트마다 MUX가 하나씩 필요합니다. 그런데 sel은 몇 개 필요할까요?',
             'MUX 8개의 sel 핀에 모두 같은 sel 신호를 연결하세요 (팬아웃).',
@@ -210,7 +305,18 @@ export const chapter4: Chapter = {
         },
         en: {
           title: '8-bit MUX',
-          briefing: 'A MUX that picks **the whole 8-bit value a or b** with one sel. sel = 0 → a, sel = 1 → b.',
+          why:
+            '🔀 A CPU is full of **forks** like "use the ALU result or the value read from memory?".\n' +
+            'This chip switches all 8 data wires at once with **one** switch.',
+          briefing:
+            '**Your job**\n' +
+            'Pick **the whole 8-bit value a or b** with one sel.\n' +
+            '- sel = 0 → out = a\n' +
+            '- sel = 1 → out = b',
+          coach: {
+            passthrough: 'Only one input ever comes out. Is sel connected to the sel pin of **all eight** MUXes?',
+            'condition:sel=1': 'Wrong **only when sel = 1**. sel seems connected to **only some** of the MUXes. Wire the same signal to every MUX’s sel (fan-out).',
+          },
           hints: [
             'You need one MUX per bit. But how many sel signals do you need?',
             'Connect the same sel to the sel pin of all 8 MUXes (fan-out).',
@@ -249,9 +355,21 @@ export const chapter4: Chapter = {
       text: {
         ko: {
           title: '8비트 가산기',
+          why:
+            '🎮 1980년대 패미컴(NES) 같은 게임기의 CPU가 바로 **8비트** 였어요. 점수·좌표·체력이 0~255 칸에 들어갔죠.\n' +
+            '이번엔 4비트 가산기 두 개를 **레고처럼 이어 붙여** 8비트로 키워요.',
           briefing:
-            '0~255의 두 수를 더하는 8비트 가산기입니다. 결과가 255를 넘으면 cout이 1입니다.\n\n' +
-            '이번엔 너무 커서 모든 조합(13만 개 이상)을 시험하지 않고, **경계값과 무작위 값 48개** 로 테스트합니다.',
+            '**할 일**\n' +
+            '0~255의 두 수와 cin을 더하는 8비트 가산기를 만드세요.\n' +
+            '- **sum** = a + b + cin (8비트)\n' +
+            '- **cout** = 결과가 255를 넘으면 1\n' +
+            '\n' +
+            '**테스트**\n' +
+            '모든 조합(13만 개 이상)을 시험하기엔 너무 커서, **경계값과 무작위 값 48개** 로 테스트해요.',
+          coach: {
+            'condition:cin=1': '**cin = 1일 때만** 틀려요. 바깥의 cin이 **아래쪽(낮은 4비트) 가산기** 의 cin에 연결됐나요?',
+            'constant@cout': 'cout이 늘 같은 값이에요. **위쪽(높은 4비트) 가산기** 의 cout을 내보내야 해요.',
+          },
           hints: [
             '전가산기 8개를 이어도 되고, 4비트 가산기 2개를 이어도 됩니다. 어느 쪽이 배선이 적을까요?',
             'ADD4 두 개: 아래 4비트용, 위 4비트용. 아래쪽의 cout이 위쪽의 cin이 됩니다.',
@@ -268,9 +386,21 @@ export const chapter4: Chapter = {
         },
         en: {
           title: '8-bit Adder',
+          why:
+            '🎮 The CPU in 1980s consoles like the NES was **8-bit** — scores, positions and health lived in 0–255.\n' +
+            'This time you **snap two 4-bit adders together like LEGO** to reach 8 bits.',
           briefing:
-            'An 8-bit adder for two numbers 0–255. If the result exceeds 255, cout is 1.\n\n' +
-            'This one is too large to try every combination (over 130,000), so it is tested with **48 edge-case and random values**.',
+            '**Your job**\n' +
+            'Build an 8-bit adder for two numbers 0–255 plus cin.\n' +
+            '- **sum** = a + b + cin (8 bits)\n' +
+            '- **cout** = 1 if the result exceeds 255\n' +
+            '\n' +
+            '**Testing**\n' +
+            'Every combination (over 130,000) is too many, so it is tested with **48 edge-case and random values**.',
+          coach: {
+            'condition:cin=1': 'Wrong **only when cin = 1**. Is the outer cin wired to the **low (bottom 4 bits) adder**’s cin?',
+            'constant@cout': 'cout never changes. Output the cout of the **high (top 4 bits) adder**.',
+          },
           hints: [
             'You could chain 8 full adders or 2 four-bit adders. Which needs fewer wires?',
             'Two ADD4s: one for the low 4 bits, one for the high 4 bits. The low cout becomes the high cin.',
@@ -328,7 +458,19 @@ export const chapter4: Chapter = {
       text: {
         ko: {
           title: '8비트 MUX4',
-          briefing: '8비트 값 네 개 중 하나를 고릅니다. sel(2비트) = 0 → a, 1 → b, 2 → c, 3 → d. 칩 이름은 **MUX4_8** (4:1, 8비트) 입니다.',
+          why:
+            '🗂 CPU가 **레지스터 네 개 중 하나** 를 골라 읽을 때 바로 이런 칩을 써요.\n' +
+            '7장 ALU에서는 "덧셈 결과, AND 결과…" 중 하나를 고르는 데 써요.',
+          briefing:
+            '**할 일**\n' +
+            '8비트 값 네 개 중 하나를 고르세요. sel은 2비트예요.\n' +
+            '- sel = 0 → a, 1 → b, 2 → c, 3 → d\n' +
+            '\n' +
+            '칩 이름은 **MUX4_8** (4:1, 8비트) 이에요.',
+          coach: {
+            'condition:sel.0=1': '**sel의 0번 비트가 1일 때만** 틀려요. 아래쪽 비트(s0)가 첫 단계 MUX8 **두 개 모두** 의 sel로 가나요?',
+            'condition:sel.1=1': '**sel의 1번 비트가 1일 때만** 틀려요. 위쪽 비트(s1)는 **마지막** MUX8의 sel로 가야 해요.',
+          },
           hints: [
             '2-3에서 MUX4를 만든 방법을 기억하나요? 토너먼트.',
             '이번엔 선수가 8비트 값이니, MUX 대신 MUX8을 씁니다.',
@@ -345,7 +487,19 @@ export const chapter4: Chapter = {
         },
         en: {
           title: '8-bit MUX4',
-          briefing: 'Pick one of four 8-bit values. sel (2 bits) = 0 → a, 1 → b, 2 → c, 3 → d. The chip is named **MUX4_8** (4:1, 8 bits).',
+          why:
+            '🗂 This is exactly the chip a CPU uses to read **one of four registers**.\n' +
+            'In the Chapter 7 ALU it picks one of "the sum, the AND result, …".',
+          briefing:
+            '**Your job**\n' +
+            'Pick one of four 8-bit values. sel is 2 bits.\n' +
+            '- sel = 0 → a, 1 → b, 2 → c, 3 → d\n' +
+            '\n' +
+            'The chip is named **MUX4_8** (4:1, 8 bits).',
+          coach: {
+            'condition:sel.0=1': 'Wrong **only when bit 0 of sel is 1**. Does the low bit (s0) reach the sel of **both** first-stage MUX8s?',
+            'condition:sel.1=1': 'Wrong **only when bit 1 of sel is 1**. The high bit (s1) belongs on the **last** MUX8’s sel.',
+          },
           hints: [
             'Remember how you built MUX4 in 2-3? A tournament.',
             'This time the players are 8-bit values, so use MUX8 instead of MUX.',
@@ -389,9 +543,20 @@ export const chapter4: Chapter = {
       text: {
         ko: {
           title: '디코더 4→16',
+          why:
+            '🏢 16칸 메모리에서 **"몇 번 칸에 쓸까?"** 를 고르는 칩이에요. 6장 RAM의 주소 장치가 돼요.\n' +
+            '💡 메모리 칩과 LED 전광판도 칸을 **행과 열** 로 나눠 한 칸을 골라요.',
           briefing:
-            '4비트 번호(0~15)로 16줄 중 하나를 켜는 디코더입니다. 출력 y는 16비트 버스입니다.\n\n' +
-            '챕터 6에서 16칸짜리 RAM의 "어느 칸에 쓸지" 를 고르는 데 이 칩을 씁니다.',
+            '**할 일**\n' +
+            '4비트 번호(0~15)로 16줄 중 **하나만** 켜는 디코더를 만드세요.\n' +
+            '- 출력 y는 16비트 버스예요\n' +
+            '- 예: in = `0101` (5) → y의 5번 비트만 1\n' +
+            '\n' +
+            '**아이디어**\n' +
+            '16칸을 4×4 격자로 보면 작은 디코더 두 개로 풀 수 있어요.',
+          coach: {
+            'constant@y': 'y가 늘 같은 값이에요. 각 AND의 결과가 **버스 합치기 16** 을 거쳐 y로 가는지 확인해 보세요.',
+          },
           hints: [
             '16칸을 4×4 격자로 생각해 보세요. 위 2비트는 "몇 번째 줄", 아래 2비트는 "몇 번째 칸".',
             'DEC2 두 개: 하나는 아래 2비트(열), 하나는 위 2비트(행). 행 h, 열 l 이 동시에 켜진 곳이 번호 4h + l 입니다.',
@@ -408,9 +573,20 @@ export const chapter4: Chapter = {
         },
         en: {
           title: 'Decoder 4→16',
+          why:
+            '🏢 The chip that picks **"which cell to write"** in a 16-cell memory — the address unit of the Chapter 6 RAM.\n' +
+            '💡 Memory chips and LED signboards also pick a cell by **row and column**.',
           briefing:
-            'A decoder that lights one of 16 lines from a 4-bit number (0–15). Output y is a 16-bit bus.\n\n' +
-            'In Chapter 6 this chip picks "which cell to write" in a 16-cell RAM.',
+            '**Your job**\n' +
+            'Build a decoder that lights **exactly one** of 16 lines from a 4-bit number (0–15).\n' +
+            '- output y is a 16-bit bus\n' +
+            '- e.g. in = `0101` (5) → only bit 5 of y is 1\n' +
+            '\n' +
+            '**The idea**\n' +
+            'Seen as a 4×4 grid, the 16 lines can be handled by two small decoders.',
+          coach: {
+            'constant@y': 'y never changes. Check that every AND’s result reaches y through a **Merge 16**.',
+          },
           hints: [
             'Picture the 16 lines as a 4×4 grid. The top 2 bits say "which row", the bottom 2 bits "which column".',
             'Two DEC2s: one for the low 2 bits (column), one for the high 2 bits (row). Where row h and column l are both on is number 4h + l.',
@@ -468,9 +644,22 @@ export const chapter4: Chapter = {
       text: {
         ko: {
           title: '보스: 8비트 덧셈/뺄셈기',
+          why:
+            '🧮 실제 CPU의 ALU는 덧셈기 **하나** 로 더하기와 빼기를 모두 해요.\n' +
+            '신호 하나(sub)로 모드를 바꾸는 이 칩이 7장 ALU의 심장이 돼요. 이 sub가 바로 **명령어(opcode)** 의 씨앗이에요.',
           briefing:
-            '신호 **sub** 하나로 모드를 바꾸는 계산 장치를 만드세요.\n\n' +
-            '**sub = 0 → out = a + b**, **sub = 1 → out = a − b**. cout은 내부 가산기의 올림을 그대로 내보냅니다. 이 칩은 챕터 7 ALU의 심장이 됩니다.',
+            '**곤란한 상황**\n' +
+            '더하기 회로와 빼기 회로를 따로 만들면 부품이 두 배예요. 하나로 둘 다 할 수 없을까요?\n' +
+            '\n' +
+            '**할 일**\n' +
+            '신호 **sub** 하나로 모드를 바꾸는 계산 장치를 만드세요.\n' +
+            '- sub = 0 → `out = a + b`\n' +
+            '- sub = 1 → `out = a − b`\n' +
+            '- **cout** = 내부 가산기의 올림을 그대로',
+          coach: {
+            'condition:sub=1': '더하기는 맞는데 **sub = 1(빼기)일 때만** 틀려요. 빼기는 `a + ¬b + 1` — **b 뒤집기** 와 **+1(cin)** 두 가지가 모두 sub를 따라 바뀌어야 해요.',
+            'condition:sub=0': '빼기는 맞는데 **sub = 0(더하기)일 때** 틀려요. b가 sub와 상관없이 늘 뒤집히거나, cin이 늘 1이지 않나요?',
+          },
           hints: [
             '3장에서 뺄셈 = a + ¬b + 1 이었습니다. 덧셈과 무엇이 다른가요? "b를 뒤집느냐", "cin이 1이냐" 두 가지뿐.',
             '"sub가 1일 때만 b를 뒤집기" — XOR의 조건부 반전(x ⊕ 1 = ¬x)을 떠올리세요. 그리고 cin에는 sub를 그대로!',
@@ -487,9 +676,22 @@ export const chapter4: Chapter = {
         },
         en: {
           title: 'Boss: 8-bit Add/Subtract Unit',
+          why:
+            '🧮 Real CPU ALUs add **and** subtract with a **single** adder.\n' +
+            'This chip, switched by one signal (sub), becomes the heart of the Chapter 7 ALU. sub is the seed of an **instruction (opcode)**.',
           briefing:
-            'Build a calculating unit whose mode is switched by one signal, **sub**.\n\n' +
-            '**sub = 0 → out = a + b**, **sub = 1 → out = a − b**. cout passes out the internal adder’s carry. This chip becomes the heart of the Chapter 7 ALU.',
+            '**The problem**\n' +
+            'Separate add and subtract circuits double the parts. Can one circuit do both?\n' +
+            '\n' +
+            '**Your job**\n' +
+            'Build a calculating unit whose mode is switched by one signal, **sub**.\n' +
+            '- sub = 0 → `out = a + b`\n' +
+            '- sub = 1 → `out = a − b`\n' +
+            '- **cout** = the internal adder’s carry, passed straight out',
+          coach: {
+            'condition:sub=1': 'Adding works, but it is wrong **only when sub = 1 (subtract)**. Subtraction is `a + ¬b + 1` — **flipping b** and **+1 (cin)** must both follow sub.',
+            'condition:sub=0': 'Subtracting works, but it is wrong **when sub = 0 (add)**. Is b always flipped, or cin always 1, regardless of sub?',
+          },
           hints: [
             'In Chapter 3, subtraction = a + ¬b + 1. How does that differ from addition? Only two things: "is b flipped?" and "is cin 1?".',
             '"Flip b only when sub is 1" — recall XOR’s conditional inversion (x ⊕ 1 = ¬x). And feed sub straight into cin!',

@@ -47,10 +47,26 @@ export const chapter5: Chapter = {
       text: {
         ko: {
           title: 'SR 래치 — 첫 기억',
+          why:
+            '🧮 계산기에 `12 + 34`를 누를 때, `+`를 누른 뒤에도 **12를 기억** 하고 있어야 하죠.\n' +
+            '그런데 지금까지 만든 회로는 입력이 사라지면 결과도 사라져요.\n' +
+            '💡 벽 스위치처럼 **"눌렀다 떼도 켜진 채로"** 있는 회로 — 컴퓨터 기억의 첫 1비트를 만들어요.',
           briefing:
-            '지금까지 만든 회로는 모두 **입력이 같으면 출력도 같았습니다**. 이제 "방금 무슨 일이 있었는지" 를 **기억** 하는 회로를 만듭니다.\n\n' +
-            '**s(set)** 를 잠깐 1로 하면 q가 1이 되고, s를 다시 0으로 해도 **q는 1로 남아야** 합니다. **r(reset)** 를 잠깐 1로 하면 q가 0이 되어 남습니다. nq는 항상 q의 반대입니다.\n\n' +
-            '이 레벨의 테스트는 진리표가 아니라 **순서** 입니다. 같은 입력(s=0, r=0)에 대해 앞에서 무슨 일이 있었는지에 따라 답이 달라집니다.',
+            '**곤란한 상황**\n' +
+            '지금까지의 회로는 모두 **입력이 같으면 출력도 같았어요**. 그래서 "방금 무슨 일이 있었는지" 를 알 수 없어요.\n' +
+            '\n' +
+            '**할 일**\n' +
+            '- **s(set)** 를 잠깐 1로 하면 q = 1, s를 다시 0으로 해도 **q는 1로 남기**\n' +
+            '- **r(reset)** 를 잠깐 1로 하면 q = 0으로 남기\n' +
+            '- **nq** 는 항상 q의 반대\n' +
+            '\n' +
+            '**테스트가 달라요**\n' +
+            '진리표가 아니라 **순서** 로 시험해요. 같은 입력(s = 0, r = 0)이라도 앞에서 무슨 일이 있었는지에 따라 답이 달라요.',
+          coach: {
+            'passthrough@q': 'q가 s를 그대로 따라가요. s를 놓아도 1로 **남으려면**, 출력을 다시 입력으로 되돌려 연결해야 해요(피드백).',
+            'constant@q': 'q가 바뀌지 않아요. s와 r이 각각 게이트에 들어가고, 두 게이트가 **서로의 출력** 을 입력으로 받는지 확인해 보세요.',
+            swapped: 'q와 nq가 **바뀐** 것 같아요. s를 켰을 때 1이 되는 쪽이 q예요.',
+          },
           hints: [
             '출력을 다시 입력으로 되돌려 연결할 수 있습니다(피드백). 게이트 두 개가 서로의 출력을 입력으로 받으면 어떻게 될까요?',
             'NOR 두 개를 교차로 연결해 보세요: q = NOR(r, nq), nq = NOR(s, q). 또는 NAND 두 개 + 입력 반전.',
@@ -68,10 +84,26 @@ export const chapter5: Chapter = {
         },
         en: {
           title: 'SR Latch — The First Memory',
+          why:
+            '🧮 When you type `12 + 34` on a calculator, it must **remember 12** after you press `+`.\n' +
+            'But every circuit so far forgets its result as soon as the input goes away.\n' +
+            '💡 A circuit that **stays on after you let go**, like a light switch — the first bit of computer memory.',
           briefing:
-            'Every circuit so far gave **the same output for the same input**. Now you will build one that **remembers** what just happened.\n\n' +
-            'Briefly setting **s (set)** to 1 makes q 1, and **q must stay 1** after s returns to 0. Briefly setting **r (reset)** to 1 makes q 0, and it stays. nq is always the opposite of q.\n\n' +
-            'This level is tested by a **sequence**, not a truth table. For the same input (s=0, r=0), the answer depends on what happened before.',
+            '**The problem**\n' +
+            'Every circuit so far gave **the same output for the same input**, so none of them can know "what just happened".\n' +
+            '\n' +
+            '**Your job**\n' +
+            '- briefly set **s (set)** to 1 → q = 1, and **q stays 1** after s returns to 0\n' +
+            '- briefly set **r (reset)** to 1 → q = 0, and it stays\n' +
+            '- **nq** is always the opposite of q\n' +
+            '\n' +
+            '**The test is different**\n' +
+            'It is a **sequence**, not a truth table. For the same input (s = 0, r = 0), the answer depends on what happened before.',
+          coach: {
+            'passthrough@q': 'q just follows s. To **stay** 1 after s is released, route an output back into an input (feedback).',
+            'constant@q': 'q never changes. Check that s and r each enter a gate, and the two gates take **each other’s outputs** as inputs.',
+            swapped: 'q and nq look **swapped**. q is the one that becomes 1 when you set s.',
+          },
           hints: [
             'You can route an output back into an input (feedback). What happens if two gates take each other’s outputs as inputs?',
             'Cross-connect two NORs: q = NOR(r, nq), nq = NOR(s, q). Or two NANDs plus inverted inputs.',
@@ -126,9 +158,23 @@ export const chapter5: Chapter = {
       text: {
         ko: {
           title: 'D 래치 — 언제 기억할까',
+          why:
+            '📸 사진기는 셔터를 누른 **그 순간** 만 담아요. 이 회로도 **"지금 받아 적어(e)"** 신호가 있을 때만 값을 저장해요.\n' +
+            '그 밖의 시간엔 입력이 아무리 바뀌어도 기억을 지켜요.',
           briefing:
-            'SR 래치는 "켜기" 와 "끄기" 두 입력이 필요해 다루기 불편합니다. **D 래치** 는 저장할 **값 d** 와 **허가 e** 만 받습니다.\n\n' +
-            '**e = 1** 이면 q가 d를 그대로 따라가고(투명), **e = 0** 이면 그 순간의 값을 붙잡아 d가 바뀌어도 무시합니다.',
+            '**곤란한 상황**\n' +
+            'SR 래치는 "켜기"와 "끄기" 입력이 따로라 다루기 불편하고, 둘을 동시에 켜면 고장 나요.\n' +
+            '\n' +
+            '**아이디어**\n' +
+            '저장할 **값 d** 와 **허가 e** 만 받는 래치를 만들어요.\n' +
+            '\n' +
+            '**할 일**\n' +
+            '- **e = 1** → q가 d를 그대로 따라가요 (투명)\n' +
+            '- **e = 0** → 그 순간의 값을 붙잡고, d가 바뀌어도 무시',
+          coach: {
+            'passthrough@q': 'q가 d를 **늘** 따라가요. e = 0일 때는 값을 붙잡아야 해요 — e가 0이면 s와 r이 모두 0이 되도록 막아 보세요.',
+            'constant@q': 'q가 바뀌지 않아요. e = 1일 때 d가 SR 래치의 s(또는 r)까지 전달되는지 확인해 보세요.',
+          },
           hints: [
             'SR 래치 칩을 쓰세요. "d를 저장하라" 는 건 d=1이면 set, d=0이면 reset 하라는 뜻입니다. 단, e가 1일 때만.',
             's = d AND e, r = (NOT d) AND e. 이러면 s와 r이 동시에 1이 될 수 없습니다.',
@@ -145,9 +191,23 @@ export const chapter5: Chapter = {
         },
         en: {
           title: 'D Latch — When to Remember',
+          why:
+            '📸 A camera captures only **the instant** you press the shutter. This circuit stores a value only while the **"write it down now" (e)** signal is on.\n' +
+            'The rest of the time, it guards its memory no matter how the input changes.',
           briefing:
-            'An SR latch needs separate "on" and "off" inputs, which is awkward. A **D latch** takes just a **value d** and an **enable e**.\n\n' +
-            'With **e = 1**, q follows d directly (transparent). With **e = 0**, it holds the value from that moment and ignores changes to d.',
+            '**The problem**\n' +
+            'An SR latch needs separate "on" and "off" inputs — awkward, and turning both on breaks it.\n' +
+            '\n' +
+            '**The idea**\n' +
+            'Build a latch that takes just a **value d** and an **enable e**.\n' +
+            '\n' +
+            '**Your job**\n' +
+            '- **e = 1** → q follows d directly (transparent)\n' +
+            '- **e = 0** → hold the value from that moment and ignore changes to d',
+          coach: {
+            'passthrough@q': 'q **always** follows d. With e = 0 it must hold — block s and r so both are 0 whenever e is 0.',
+            'constant@q': 'q never changes. Check that, with e = 1, d actually reaches the SR latch’s s (or r).',
+          },
           hints: [
             'Use your SR latch chip. "Store d" means set when d=1 and reset when d=0 — but only while e is 1.',
             's = d AND e, r = (NOT d) AND e. Now s and r can never both be 1.',
@@ -202,10 +262,22 @@ export const chapter5: Chapter = {
       text: {
         ko: {
           title: 'D 플립플롭 — 찰칵!',
+          why:
+            '⏱ 컴퓨터 안의 수십억 개 부품은 클럭에 맞춰 **동시에** 값을 바꿔요. "3GHz CPU"는 이 찰칵이 1초에 30억 번이라는 뜻이에요.\n' +
+            '🚪 **정확히 그 순간에만** 문이 열리는 부품 — 모든 레지스터의 재료예요.',
           briefing:
-            'D 래치는 e가 1인 **동안** 계속 바뀝니다. 컴퓨터는 수많은 부품이 **정확히 같은 순간** 에 값을 저장해야 하므로, "순간" 에만 반응하는 부품이 필요합니다.\n\n' +
-            '**클럭 clk가 0 → 1로 올라가는 순간(상승 엣지)** 의 d만 저장하세요. clk가 1로 머물러 있는 동안이나 내려갈 때 d가 바뀌어도 q는 그대로입니다.\n\n' +
-            '오른쪽 **입력값** 칸의 **클럭** 버튼으로 clk를 한 번 올렸다 내릴 수 있습니다.',
+            '**곤란한 상황**\n' +
+            'D 래치는 e가 1인 **동안** 계속 바뀌어요. 그러면 값이 여러 부품을 줄줄이 통과해 버려요. 수많은 부품이 **정확히 같은 순간** 에 저장하려면 "순간"에만 반응하는 부품이 필요해요.\n' +
+            '\n' +
+            '**할 일**\n' +
+            '- 클럭 **clk가 0 → 1로 올라가는 순간(상승 엣지)** 의 d만 저장하기\n' +
+            '- clk가 1로 머물러 있는 동안이나 내려갈 때 d가 바뀌어도 **q는 그대로**\n' +
+            '\n' +
+            '오른쪽 **입력값** 칸의 **클럭** 버튼으로 clk를 한 번 올렸다 내릴 수 있어요.',
+          coach: {
+            'passthrough@q': 'q가 d를 바로 따라가요. 클럭이 **올라가는 순간에만** 바뀌어야 해요 — 래치 두 개를 문 두 개짜리 에어록처럼 이어 보세요.',
+            'constant@q': 'q가 바뀌지 않아요. 두 래치의 e가 **둘 다 0** 인 때가 있지 않나요? 한쪽 e에는 clk, 다른 쪽엔 NOT clk를 넣어 보세요.',
+          },
           hints: [
             'D 래치 두 개를 이어 보세요. 하나가 투명할 때 다른 하나는 닫혀 있다면? 문이 두 개인 에어록처럼.',
             '앞쪽(마스터)은 clk = 0일 때 열리고, 뒤쪽(슬레이브)은 clk = 1일 때 열리게 하세요.',
@@ -223,10 +295,22 @@ export const chapter5: Chapter = {
         },
         en: {
           title: 'D Flip-Flop — Click!',
+          why:
+            '⏱ Billions of parts inside a computer change values **together**, in step with the clock. "3 GHz" means this click happens 3 billion times a second.\n' +
+            '🚪 A part whose door opens **only at that instant** — the raw material of every register.',
           briefing:
-            'A D latch keeps changing **while** e is 1. A computer needs countless parts to store values at **exactly the same instant**, so it needs a part that reacts to a moment.\n\n' +
-            'Store d **only at the instant clk rises from 0 to 1 (the rising edge)**. If d changes while clk stays 1, or as it falls, q must not change.\n\n' +
+            '**The problem**\n' +
+            'A D latch keeps changing **while** e is 1, so a value can race through several parts in a row. For countless parts to store at **exactly the same instant**, you need a part that reacts to a moment.\n' +
+            '\n' +
+            '**Your job**\n' +
+            '- store d **only at the instant clk rises from 0 to 1 (the rising edge)**\n' +
+            '- if d changes while clk stays 1, or as it falls, **q stays put**\n' +
+            '\n' +
             'The **Clock** button in the **Input values** card raises and lowers clk once.',
+          coach: {
+            'passthrough@q': 'q follows d immediately. It should change **only as the clock rises** — chain two latches like an airlock with two doors.',
+            'constant@q': 'q never changes. Are both latches’ e ever 0 at the same time? Give one latch clk and the other NOT clk.',
+          },
           hints: [
             'Chain two D latches. What if one is closed whenever the other is transparent? Like an airlock with two doors.',
             'Make the front one (master) open when clk = 0 and the back one (slave) open when clk = 1.',
@@ -278,9 +362,22 @@ export const chapter5: Chapter = {
       text: {
         ko: {
           title: '1비트 레지스터',
+          why:
+            '🎛 CPU는 매 순간 **"이번엔 이 칸만 바꾸고, 나머지는 그대로"** 가 필요해요. 예: 계산 결과는 A 칸에만 쓰고, 다른 칸은 지켜야 하죠.\n' +
+            '그 **쓰기 허가(load)** 가 붙은 1비트 칸을 만들어요.',
           briefing:
-            'D 플립플롭은 클럭마다 **항상** 새 값을 받아들입니다. 하지만 컴퓨터는 "이번에는 이 레지스터만 바꾸고, 나머지는 그대로" 가 필요합니다.\n\n' +
-            '**load = 1** 일 때만 클럭에 d를 저장하고, **load = 0** 이면 클럭이 와도 **기존 값을 유지** 하세요.',
+            '**곤란한 상황**\n' +
+            'D 플립플롭은 클럭마다 **항상** 새 값을 받아들여요. 모든 부품이 같은 클럭을 받으니, 이대로면 클럭이 칠 때마다 모든 칸이 바뀌어 버려요.\n' +
+            '\n' +
+            '**할 일**\n' +
+            '- **load = 1** → 클럭에 d를 저장\n' +
+            '- **load = 0** → 클럭이 와도 **기존 값을 유지**',
+          coach: {
+            'passthrough@q': 'q가 클럭마다 d를 그대로 받아들여요. **load = 0** 이면 값을 지켜야 해요 — DFF에 d 대신 **무엇을 다시** 넣으면 "유지"가 될까요?',
+            'condition:load=0': '**load = 0일 때** 틀려요. DFF는 클럭마다 무조건 무언가를 저장해요 — 값을 지키려면 DFF에 **무엇을 다시** 넣어 줘야 할까요?',
+            'condition:load=1': '**load = 1일 때** 틀려요. load가 1이면 **새 값 d** 가 DFF로 가야 해요. MUX의 a와 b가 바뀌지 않았나요?',
+            'constant@q': 'q가 바뀌지 않아요. clk가 DFF의 clk에, DFF의 q가 출력 q에 연결됐는지 확인해 보세요.',
+          },
           hints: [
             'DFF는 클럭마다 무조건 d를 저장합니다. 그렇다면 "유지" 하려면 DFF에 무엇을 넣어 줘야 할까요?',
             '유지 = 자기 자신의 현재 값(q)을 다시 저장하는 것. load로 "새 값 d" 와 "현재 값 q" 중 하나를 골라 DFF에 넣으세요.',
@@ -297,9 +394,22 @@ export const chapter5: Chapter = {
         },
         en: {
           title: '1-bit Register',
+          why:
+            '🎛 A CPU constantly needs **"change only this slot now, leave the rest alone"**. E.g. write the result into A only, and protect every other slot.\n' +
+            'You will build a 1-bit slot with that **write permission (load)**.',
           briefing:
-            'A D flip-flop takes a new value on **every** clock. But a computer needs "change only this register now, leave the others alone".\n\n' +
-            'Store d on the clock **only when load = 1**; when **load = 0**, **keep the old value** even when the clock ticks.',
+            '**The problem**\n' +
+            'A D flip-flop takes a new value on **every** clock. Every part receives the same clock, so as-is every slot would change on every tick.\n' +
+            '\n' +
+            '**Your job**\n' +
+            '- **load = 1** → store d on the clock\n' +
+            '- **load = 0** → **keep the old value** even when the clock ticks',
+          coach: {
+            'passthrough@q': 'q takes d on every clock. With **load = 0** it must hold — what could you feed the DFF **instead of d** so that it keeps its value?',
+            'condition:load=0': 'Wrong **when load = 0**. A DFF stores something on every clock no matter what — to keep its value, **what should you feed back** into it?',
+            'condition:load=1': 'Wrong **when load = 1**. With load = 1, the **new value d** should go to the DFF. Are the MUX’s a and b swapped?',
+            'constant@q': 'q never changes. Check that clk reaches the DFF’s clk and the DFF’s q reaches the output q.',
+          },
           hints: [
             'A DFF always stores d on each clock. So what should you feed the DFF to "keep" its value?',
             'Keeping = storing its own current value (q) again. Use load to choose between "new value d" and "current value q" for the DFF.',
@@ -352,9 +462,19 @@ export const chapter5: Chapter = {
       text: {
         ko: {
           title: '8비트 레지스터',
+          why:
+            '🧰 레지스터는 CPU의 **작업대** 예요. 계산할 수를 올려 두고, ALU로 계산하고, 결과를 다시 올려 놔요.\n' +
+            '8비트면 0~255 — 게임 점수 한 칸, 글자 하나(ASCII)를 담을 수 있어요.',
           briefing:
-            '1비트 레지스터 8개를 나란히 놓아 **8비트 값 하나** 를 기억하는 레지스터를 만드세요. load와 clk는 8개가 모두 공유합니다.\n\n' +
-            'REG1 하나를 배선한 뒤 **⌘D(복제)** 를 쓰면 빠릅니다.',
+            '**할 일**\n' +
+            '1비트 레지스터 8개를 나란히 놓아 **8비트 값 하나** 를 기억하는 레지스터를 만드세요.\n' +
+            '- **load** 와 **clk** 는 8개가 모두 공유해요\n' +
+            '\n' +
+            'REG1 하나를 배선한 뒤 **⌘D(복제)** 를 쓰면 빨라요.',
+          coach: {
+            'condition:load=0': '**load = 0일 때** 틀려요. load가 REG1 8개 **모두** 의 load에 연결됐나요?',
+            'constant@q': 'q가 바뀌지 않아요. clk가 REG1 8개 **모두** 에 연결됐는지, 출력이 버스 합치기 8을 거쳐 q로 가는지 확인해 보세요.',
+          },
           hints: [
             '4장의 8비트 칩들과 같은 패턴입니다: 버스 분리 → 비트마다 같은 부품 → 버스 합치기.',
             '각 REG1의 d는 d 버스의 한 비트, q는 출력 버스의 한 비트. load와 clk는 8개 모두에 연결(팬아웃).',
@@ -371,9 +491,19 @@ export const chapter5: Chapter = {
         },
         en: {
           title: '8-bit Register',
+          why:
+            '🧰 Registers are the CPU’s **workbench**: load the numbers, compute with the ALU, put the result back.\n' +
+            '8 bits hold 0–255 — one game score, or one letter (ASCII).',
           briefing:
-            'Line up eight 1-bit registers to remember **one 8-bit value**. All eight share load and clk.\n\n' +
+            '**Your job**\n' +
+            'Line up eight 1-bit registers to remember **one 8-bit value**.\n' +
+            '- all eight share **load** and **clk**\n' +
+            '\n' +
             'Wire one REG1, then use **⌘D (duplicate)** to go faster.',
+          coach: {
+            'condition:load=0': 'Wrong **when load = 0**. Is load connected to the load of **all eight** REG1s?',
+            'constant@q': 'q never changes. Check that clk reaches **all eight** REG1s and the outputs reach q through a Merge 8.',
+          },
           hints: [
             'Same pattern as the 8-bit chips in Chapter 4: split → the same part per bit → merge.',
             'Each REG1 gets one bit of the d bus and drives one bit of the output bus. load and clk fan out to all eight.',
@@ -411,9 +541,21 @@ export const chapter5: Chapter = {
       text: {
         ko: {
           title: '4비트 카운터',
+          why:
+            '⏱ 스톱워치, 🚦 신호등 타이머, 🎵 메트로놈 — 모두 **"박자마다 하나씩 세기"** 예요.\n' +
+            '💻 CPU의 **프로그램 카운터** 도 카운터예요: 명령을 하나 실행할 때마다 다음 칸으로 +1.',
           briefing:
-            '클럭이 올 때마다 **1씩 증가** 하는 카운터를 만드세요. 15 다음은 0으로 돌아갑니다. **reset = 1** 이면 다음 클럭에 0이 됩니다.\n\n' +
-            '**자동 클럭** 을 켜면 숫자가 저절로 올라가는 모습을 볼 수 있습니다.',
+            '**아이디어**\n' +
+            '"다음 값 = 지금 값 + 1". 지금 값은 플립플롭에 기억하고, +1은 가산기로 해요.\n' +
+            '\n' +
+            '**할 일**\n' +
+            '- 클럭이 올 때마다 **1씩 증가** (15 다음은 0)\n' +
+            '- **reset = 1** 이면 다음 클럭에 0\n' +
+            '\n' +
+            '**자동 클럭** 을 켜면 숫자가 저절로 올라가는 모습을 볼 수 있어요.',
+          coach: {
+            'constant@q': 'q가 늘 같은 값이에요. 가산기가 **+1** 을 하나요(cin 또는 b에 1)? 그리고 합계가 다시 플립플롭의 **d로 돌아가나요**?',
+          },
           hints: [
             '"다음 값 = 현재 값 + 1". 현재 값은 플립플롭에 있고, +1은 가산기로 할 수 있습니다. 가산기의 출력을 다시 플립플롭으로!',
             'DFF 4개(또는 레지스터)의 출력 q를 ADD4.a에 넣고, b = 0000, cin = 1로 +1. 합계를 다시 DFF의 d로.',
@@ -431,9 +573,21 @@ export const chapter5: Chapter = {
         },
         en: {
           title: '4-bit Counter',
+          why:
+            '⏱ Stopwatches, 🚦 traffic-light timers, 🎵 metronomes — all **"count one per beat"**.\n' +
+            '💻 A CPU’s **program counter** is a counter too: +1 to the next slot after each instruction.',
           briefing:
-            'Build a counter that **increases by 1** on every clock. After 15 it wraps to 0. When **reset = 1**, the next clock sets it to 0.\n\n' +
+            '**The idea**\n' +
+            '"next value = current value + 1". The current value lives in flip-flops; +1 is an adder’s job.\n' +
+            '\n' +
+            '**Your job**\n' +
+            '- **increase by 1** on every clock (after 15 comes 0)\n' +
+            '- with **reset = 1**, the next clock sets it to 0\n' +
+            '\n' +
             'Turn on **Auto clock** to watch the number climb by itself.',
+          coach: {
+            'constant@q': 'q never changes. Does the adder actually do **+1** (a 1 on cin or b)? And does the sum go **back into the flip-flops’ d**?',
+          },
           hints: [
             '"next value = current value + 1". The current value lives in flip-flops, and +1 is an adder’s job. Feed the adder’s output back into the flip-flops!',
             'Put the q of four DFFs (or a register) into ADD4.a, with b = 0000 and cin = 1 for +1. Route the sum back to the DFFs’ d.',
@@ -498,9 +652,19 @@ export const chapter5: Chapter = {
       text: {
         ko: {
           title: '보스: 스톱워치',
+          why:
+            '⏱ 진짜 스톱워치예요: **시작/정지(run)** 와 **초기화(reset)** 버튼이 달린 카운터.\n' +
+            '💻 8장 CPU의 프로그램 카운터도 이렇게 "멈춤"과 "처음으로" 신호를 받아요.',
           briefing:
-            '**run = 1** 이면 클럭마다 1초씩(1씩) 올라가고, **run = 0** 이면 멈춰서 현재 값을 유지합니다. **reset = 1** 이면 다음 클럭에 0이 됩니다(run보다 우선).\n\n' +
-            '자동 클럭을 켜고 run을 켰다 껐다 해 보세요. 진짜 스톱워치처럼 동작해야 합니다.',
+            '**할 일**\n' +
+            '- **run = 1** → 클럭마다 1씩 증가\n' +
+            '- **run = 0** → 멈춰서 현재 값 유지\n' +
+            '- **reset = 1** → 다음 클럭에 0 (run보다 우선)\n' +
+            '\n' +
+            '자동 클럭을 켜고 run을 켰다 껐다 해 보세요. 진짜 스톱워치처럼 동작해야 해요.',
+          coach: {
+            'constant@q': 'q가 늘 같은 값이에요. run이 1일 때 가산기가 **+1** 을 하도록 연결됐나요? 합계가 다시 플립플롭으로 돌아가나요?',
+          },
           hints: [
             '카운터와 거의 같습니다. 다른 점은 "run = 0이면 +0" 이라는 것뿐.',
             '+1 을 할 때 cin에 상수 1 대신 무엇을 넣으면 "run일 때만 +1" 이 될까요?',
@@ -517,9 +681,19 @@ export const chapter5: Chapter = {
         },
         en: {
           title: 'Boss: Stopwatch',
+          why:
+            '⏱ A real stopwatch: a counter with **start/stop (run)** and **reset** buttons.\n' +
+            '💻 The Chapter 8 CPU’s program counter takes "pause" and "back to the start" signals just like this.',
           briefing:
-            'With **run = 1** it climbs by 1 each clock; with **run = 0** it stops and holds its value. With **reset = 1** the next clock sets it to 0 (reset beats run).\n\n' +
+            '**Your job**\n' +
+            '- **run = 1** → climb by 1 each clock\n' +
+            '- **run = 0** → stop and hold the value\n' +
+            '- **reset = 1** → the next clock sets it to 0 (reset beats run)\n' +
+            '\n' +
             'Turn on the auto clock and toggle run. It should behave like a real stopwatch.',
+          coach: {
+            'constant@q': 'q never changes. When run is 1, does the adder do **+1**? Does the sum go back into the flip-flops?',
+          },
           hints: [
             'Almost identical to the counter. The only difference: "+0 when run = 0".',
             'For the +1, what could you feed into cin instead of Const 1 so it only adds while running?',

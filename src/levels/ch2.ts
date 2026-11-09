@@ -21,9 +21,21 @@ export const chapter2: Chapter = {
       text: {
         ko: {
           title: 'MUX — 골라 보내기',
+          why:
+            '🎧 소리를 이어폰으로 보낼까, 스피커로 보낼까? 🎮 1P와 2P 중 누구의 입력을 받을까? — 둘 중 하나를 고르는 일이에요.\n' +
+            '🧠 CPU는 "이번엔 어떤 값을 쓸까"를 MUX로 골라요. 1초에 수십억 번!',
           briefing:
-            '**멀티플렉서(MUX)** 는 두 데이터 중 하나를 골라 내보내는 스위치입니다.\n\n' +
-            '**sel = 0 이면 a**, **sel = 1 이면 b** 가 out으로 나가게 만드세요. CPU는 이런 선택을 1초에 수십억 번 합니다.',
+            '**멀티플렉서(MUX)** 는 두 데이터 중 하나를 골라 내보내는 스위치예요.\n' +
+            '\n' +
+            '**할 일**\n' +
+            '- **sel = 0** 이면 **a** 가 out으로\n' +
+            '- **sel = 1** 이면 **b** 가 out으로\n' +
+            '\n' +
+            '**아이디어**\n' +
+            'AND는 "sel이 허락할 때만 통과시키는 문", OR는 두 길이 만나는 합류점이 될 수 있어요.',
+          coach: {
+            passthrough: 'out에 입력 하나만 그대로 나오고 있어요. 다른 쪽 입력도 **sel에 따라** 나갈 수 있게 길을 만들어 주세요.',
+          },
           hints: [
             '"sel이 0이고 a가 1" 이거나 "sel이 1이고 b가 1" 이면 out은 1입니다. 각각을 어떤 게이트로 표현할까요?',
             'AND(a, NOT sel) 와 AND(b, sel) 를 만들어 보세요. 둘 중 하나만 a나 b를 통과시킵니다.',
@@ -40,9 +52,21 @@ export const chapter2: Chapter = {
         },
         en: {
           title: 'MUX — Pick One',
+          why:
+            '🎧 Send the sound to earphones or speakers? 🎮 Take input from player 1 or player 2? — picking one of two.\n' +
+            '🧠 A CPU picks "which value to use now" with MUXes, billions of times a second!',
           briefing:
-            'A **multiplexer (MUX)** is a switch that picks one of two data inputs.\n\n' +
-            'Make **sel = 0 send a** and **sel = 1 send b** to out. A CPU makes choices like this billions of times a second.',
+            'A **multiplexer (MUX)** is a switch that picks one of two data inputs.\n' +
+            '\n' +
+            '**Your job**\n' +
+            '- **sel = 0** sends **a** to out\n' +
+            '- **sel = 1** sends **b** to out\n' +
+            '\n' +
+            '**The idea**\n' +
+            'AND can be a gate that lets a signal through only when sel allows it; OR can be the junction where two paths meet.',
+          coach: {
+            passthrough: 'One input comes straight out of out. Give the other input a path too, chosen by sel.',
+          },
           hints: [
             'out is 1 if "sel is 0 and a is 1" or "sel is 1 and b is 1". Which gates express each part?',
             'Build AND(a, NOT sel) and AND(b, sel). Only one of them lets its data through.',
@@ -83,9 +107,19 @@ export const chapter2: Chapter = {
       text: {
         ko: {
           title: 'DEMUX — 나눠 보내기',
+          why:
+            '📮 우편 분류기: 편지 한 통을 주소가 가리키는 칸 **하나에만** 넣어요.\n' +
+            '🧠 메모리에 쓸 때도 "몇 번 칸에 쓸지"에 따라 신호를 한 곳에만 보내요 (6장 RAM).',
           briefing:
-            '**디멀티플렉서(DEMUX)** 는 MUX의 반대입니다. 입력 하나를 sel이 가리키는 곳으로 보냅니다.\n\n' +
-            '**sel = 0 이면 in → a**, **sel = 1 이면 in → b**. 선택되지 않은 쪽은 0입니다.',
+            '**디멀티플렉서(DEMUX)** 는 MUX의 반대예요. 입력 하나를 sel이 가리키는 곳으로 보내요.\n' +
+            '\n' +
+            '**할 일**\n' +
+            '- **sel = 0** 이면 `in → a`\n' +
+            '- **sel = 1** 이면 `in → b`\n' +
+            '- 선택되지 않은 쪽은 0',
+          coach: {
+            swapped: '**a와 b가 바뀌었어요.** sel = 0일 때 **a** 로 보내야 해요. NOT이 어느 쪽 길에 붙어 있는지 확인해 보세요.',
+          },
           hints: [
             'MUX에서 쓴 "문" 아이디어를 기억하세요. 각 출력에 문이 하나씩 필요합니다.',
             'a 쪽 문은 sel이 0일 때 열리고, b 쪽 문은 sel이 1일 때 열립니다.',
@@ -102,9 +136,19 @@ export const chapter2: Chapter = {
         },
         en: {
           title: 'DEMUX — Send One Way',
+          why:
+            '📮 A mail sorter puts each letter into **only one** slot — the one its address points to.\n' +
+            '🧠 Writing to memory works the same way: the signal goes only to the chosen cell (Chapter 6 RAM).',
           briefing:
-            'A **demultiplexer (DEMUX)** is the reverse of a MUX: it sends one input to the place sel points at.\n\n' +
-            '**sel = 0: in → a**, **sel = 1: in → b**. The unselected output is 0.',
+            'A **demultiplexer (DEMUX)** is the reverse of a MUX: it sends one input to the place sel points at.\n' +
+            '\n' +
+            '**Your job**\n' +
+            '- **sel = 0**: `in → a`\n' +
+            '- **sel = 1**: `in → b`\n' +
+            '- the unselected output is 0',
+          coach: {
+            swapped: '**a and b are swapped.** sel = 0 must send to **a**. Check which path the NOT is on.',
+          },
           hints: [
             'Remember the "gate" idea from the MUX. Each output needs its own gate.',
             'The gate for a opens when sel is 0; the gate for b opens when sel is 1.',
@@ -144,9 +188,23 @@ export const chapter2: Chapter = {
       text: {
         ko: {
           title: 'MUX4 — 넷 중 하나',
+          why:
+            '📺 TV 리모컨의 HDMI 1~4 입력 선택처럼, **번호** 로 여러 개 중 하나를 골라요.\n' +
+            '🧠 CPU가 여러 레지스터 중 하나를 꺼낼 때 이런 구조를 써요.',
           briefing:
-            '이번에는 네 개 중 하나를 고릅니다. 선택 신호 **sel** 은 **2비트 버스** 입니다 (0~3).\n\n' +
-            'sel = 0 → a, 1 → b, 2 → c, 3 → d. 버스를 비트로 나누려면 **버스 분리 2** 를 쓰세요. 분리기의 b0이 일의 자리(가장 낮은 비트)입니다.',
+            '이번에는 **네 개 중 하나** 를 골라요. 선택 신호 **sel** 은 **2비트 버스** 예요 (0~3).\n' +
+            '\n' +
+            '**할 일**\n' +
+            '- sel = 0 → a, 1 → b, 2 → c, 3 → d\n' +
+            '\n' +
+            '**요령**\n' +
+            '- 버스를 비트로 나누려면 **버스 분리 2** 를 쓰세요.\n' +
+            '- 분리기의 **b0** 이 일의 자리(가장 낮은 비트)예요.',
+          coach: {
+            'condition:sel.1=1': '**sel의 높은 비트(b1)가 1일 때만** 틀려요 → c, d 쪽이에요. c/d를 고르는 MUX나, 마지막 MUX의 sel 연결을 확인해 보세요.',
+            'condition:sel.1=0': '**sel의 높은 비트(b1)가 0일 때만** 틀려요 → a, b 쪽이에요. a/b를 고르는 MUX나, 마지막 MUX의 sel 연결을 확인해 보세요.',
+            'condition:sel.0=1': '**sel의 낮은 비트(b0)가 1일 때만** 틀려요 → b, d 쪽이에요. 첫 단계 MUX들의 sel에 **b0** 이 이어졌는지 확인해 보세요.',
+          },
           hints: [
             '이미 만든 MUX(둘 중 하나)를 여러 개 쓰면 어떨까요? 토너먼트처럼 생각해 보세요.',
             '1라운드: MUX로 (a, b) 중 하나, (c, d) 중 하나를 고릅니다. 이때 sel의 어느 비트를 써야 할까요?',
@@ -163,9 +221,23 @@ export const chapter2: Chapter = {
         },
         en: {
           title: 'MUX4 — One of Four',
+          why:
+            '📺 Like picking HDMI 1–4 on a TV remote, you choose one of several by **number**.\n' +
+            '🧠 A CPU uses this shape to read one of its many registers.',
           briefing:
-            'Now pick one of four. The select signal **sel** is a **2-bit bus** (0–3).\n\n' +
-            'sel = 0 → a, 1 → b, 2 → c, 3 → d. Use **Split 2** to break the bus into bits; the splitter’s b0 is the ones place (lowest bit).',
+            'Now pick **one of four**. The select signal **sel** is a **2-bit bus** (0–3).\n' +
+            '\n' +
+            '**Your job**\n' +
+            '- sel = 0 → a, 1 → b, 2 → c, 3 → d\n' +
+            '\n' +
+            '**The recipe**\n' +
+            '- Use **Split 2** to break the bus into bits.\n' +
+            '- The splitter\'s **b0** is the ones place (lowest bit).',
+          coach: {
+            'condition:sel.1=1': 'Wrong **only when sel’s high bit (b1) is 1** → the c, d side. Check the MUX that picks c/d, or the sel wire of the final MUX.',
+            'condition:sel.1=0': 'Wrong **only when sel’s high bit (b1) is 0** → the a, b side. Check the MUX that picks a/b, or the sel wire of the final MUX.',
+            'condition:sel.0=1': 'Wrong **only when sel’s low bit (b0) is 1** → the b, d side. Check that **b0** drives the sel of the first-stage MUXes.',
+          },
           hints: [
             'What if you used several of your 2-input MUXes? Think of a tournament.',
             'Round 1: one MUX picks from (a, b), another from (c, d). Which bit of sel should they use?',
@@ -209,9 +281,24 @@ export const chapter2: Chapter = {
       text: {
         ko: {
           title: '디코더 2→4',
+          why:
+            '🛗 엘리베이터: 층 번호를 받아 그 층 표시등 **하나만** 켜요.\n' +
+            '🧠 메모리 주소(번호)로 **그 칸 하나만** 고를 때 디코더를 써요 (6장 RAM).',
           briefing:
-            '**디코더** 는 2진수 번호를 받아, 그 번호의 출력 **하나만** 1로 켭니다.\n\n' +
-            'in = 0 → y의 0번 비트만 1 (0001), in = 1 → 0010, in = 2 → 0100, in = 3 → 1000. 출력 y는 4비트 버스이니 **버스 합치기 4** 로 묶으세요.',
+            '**디코더** 는 2진수 번호를 받아, 그 번호의 출력 **하나만** 1로 켜요.\n' +
+            '\n' +
+            '**할 일**\n' +
+            '- in = 0 → `0001` (y의 0번 비트만 1)\n' +
+            '- in = 1 → `0010`\n' +
+            '- in = 2 → `0100`\n' +
+            '- in = 3 → `1000`\n' +
+            '\n' +
+            '**요령**\n' +
+            '출력 y는 4비트 버스이니 **버스 합치기 4** 로 묶으세요.',
+          coach: {
+            inverted: 'y가 정반대예요 — 켜져야 할 줄만 0이고 나머지가 1이에요. NAND 대신 **AND** 를 쓰거나 결과를 뒤집어 보세요.',
+            constant: 'y가 늘 같은 값이에요. **버스 합치기** 의 출력이 y에 이어졌는지, 각 줄이 합치기의 b0~b3에 들어갔는지 확인해 보세요.',
+          },
           hints: [
             'y의 0번 비트는 언제 1인가요? in의 두 비트가 모두 0일 때입니다. "두 비트가 모두 0" 은 어떤 게이트로?',
             '각 출력 비트 = (b1 또는 NOT b1) AND (b0 또는 NOT b0). 네 가지 조합이 정확히 네 출력입니다.',
@@ -228,9 +315,24 @@ export const chapter2: Chapter = {
         },
         en: {
           title: 'Decoder 2→4',
+          why:
+            '🛗 An elevator takes a floor number and lights **only** that floor\'s lamp.\n' +
+            '🧠 A decoder picks **just one** memory cell from its address (Chapter 6 RAM).',
           briefing:
-            'A **decoder** takes a binary number and turns on **only** the output with that number.\n\n' +
-            'in = 0 → only bit 0 of y is 1 (0001), in = 1 → 0010, in = 2 → 0100, in = 3 → 1000. y is a 4-bit bus, so bundle it with **Merge 4**.',
+            'A **decoder** takes a binary number and turns on **only** the output with that number.\n' +
+            '\n' +
+            '**Your job**\n' +
+            '- in = 0 → `0001` (only bit 0 of y is 1)\n' +
+            '- in = 1 → `0010`\n' +
+            '- in = 2 → `0100`\n' +
+            '- in = 3 → `1000`\n' +
+            '\n' +
+            '**The recipe**\n' +
+            'y is a 4-bit bus, so bundle it with **Merge 4**.',
+          coach: {
+            inverted: 'y is the exact opposite — the chosen line is 0 and the rest are 1. Use **AND** instead of NAND, or flip the results.',
+            constant: 'y never changes. Is the **Merge** output wired to y, and does each line go into the merge’s b0–b3?',
+          },
           hints: [
             'When is bit 0 of y equal to 1? When both bits of in are 0. Which gate says "both are 0"?',
             'Each output bit = (b1 or NOT b1) AND (b0 or NOT b0). The four combinations are exactly the four outputs.',
@@ -273,9 +375,25 @@ export const chapter2: Chapter = {
       text: {
         ko: {
           title: '디코더 3→8',
+          why:
+            '🧠 주소가 1비트 늘 때마다 고를 수 있는 칸이 **두 배**: 2비트 → 4칸, 3비트 → 8칸, 8비트 → 256칸.\n' +
+            '작은 디코더를 이어 붙여 큰 디코더를 만드는 법을 익혀요. RAM 256칸(6-3)도 이렇게 만들어요.',
           briefing:
-            '3비트 번호(0~7)를 받아 8줄 중 하나를 켜는 디코더를 만드세요.\n\n' +
-            '방금 만든 **DEC2** 를 활용하면 훨씬 쉽습니다. **버스 분리 3**, **버스 합치기 2/8** 을 쓸 수 있습니다.',
+            '**질문**\n' +
+            '4줄짜리 디코더(DEC2)가 있어요. 8줄 중 하나를 고르려면 어떻게 할까요?\n' +
+            '\n' +
+            '**할 일**\n' +
+            '3비트 번호(0~7)를 받아 8줄 중 **하나만** 켜는 디코더를 만드세요.\n' +
+            '\n' +
+            '**요령**\n' +
+            '- 방금 만든 **DEC2** 를 활용하면 훨씬 쉬워요.\n' +
+            '- 높은 비트(b2)는 "위쪽 4줄이냐, 아래쪽 4줄이냐"를 정해요.\n' +
+            '- **버스 분리 3**, **버스 합치기 2/8** 을 쓸 수 있어요.',
+          coach: {
+            'condition:in.2=1': '**in의 높은 비트(b2)가 1일 때만** 틀려요 → 위쪽 4줄(4~7)이에요. b2가 1일 때 켜질 쪽 DEC2(또는 AND)와, 합치기의 b4~b7 연결을 확인해 보세요.',
+            'condition:in.2=0': '**in의 높은 비트(b2)가 0일 때만** 틀려요 → 아래쪽 4줄(0~3)이에요. b2가 0일 때 쪽(NOT b2)과, 합치기의 b0~b3 연결을 확인해 보세요.',
+            inverted: 'y가 정반대예요 — 켜져야 할 줄만 0이에요. NAND 대신 **AND** 를 쓰거나 결과를 뒤집어 보세요.',
+          },
           hints: [
             '3비트 번호의 아래 두 비트는 "4개 묶음 안에서 몇 번째인가", 맨 위 비트는 "앞 묶음(0~3)인가 뒤 묶음(4~7)인가" 를 뜻합니다.',
             'DEC2에 아래 두 비트를 넣으면 4줄 중 하나가 켜집니다. 이것을 b2에 따라 앞 묶음 또는 뒤 묶음으로 보내면 됩니다.',
@@ -292,9 +410,25 @@ export const chapter2: Chapter = {
         },
         en: {
           title: 'Decoder 3→8',
+          why:
+            '🧠 Each extra address bit **doubles** the cells you can pick: 2 bits → 4, 3 bits → 8, 8 bits → 256.\n' +
+            'Here you learn to build big decoders from small ones — RAM 256 (6-3) is built the same way.',
           briefing:
-            'Build a decoder that takes a 3-bit number (0–7) and turns on one of 8 lines.\n\n' +
-            'Your **DEC2** makes this much easier. **Split 3** and **Merge 2/8** are available.',
+            '**The question**\n' +
+            'You have a 4-line decoder (DEC2). How do you pick one of 8 lines?\n' +
+            '\n' +
+            '**Your job**\n' +
+            'Build a decoder that takes a 3-bit number (0–7) and turns on **only one** of 8 lines.\n' +
+            '\n' +
+            '**The recipe**\n' +
+            '- Your **DEC2** makes this much easier.\n' +
+            '- The high bit (b2) decides "upper 4 lines or lower 4 lines".\n' +
+            '- **Split 3** and **Merge 2/8** are available.',
+          coach: {
+            'condition:in.2=1': 'Wrong **only when in’s high bit (b2) is 1** → the upper lines (4–7). Check the side enabled when b2 = 1 and the merge’s b4–b7 wires.',
+            'condition:in.2=0': 'Wrong **only when in’s high bit (b2) is 0** → the lower lines (0–3). Check the NOT b2 side and the merge’s b0–b3 wires.',
+            inverted: 'y is the exact opposite — the chosen line is 0. Use **AND** instead of NAND, or flip the results.',
+          },
           hints: [
             'The low two bits say "which one within a group of 4"; the top bit says "first group (0–3) or second (4–7)".',
             'Feed the low two bits to DEC2 to light one of 4 lines, then route it to the first or second group based on b2.',
@@ -357,9 +491,18 @@ export const chapter2: Chapter = {
       text: {
         ko: {
           title: '인코더 4→2',
+          why:
+            '⌨ 키보드처럼, 눌린 것 **하나** 를 번호(코드)로 바꿔 보낼 때 써요.\n' +
+            '🚨 여러 센서 중 어느 것이 울렸는지 번호로 알려 줄 때도요.',
           briefing:
-            '**인코더** 는 디코더의 반대입니다. 4개 입력 중 **켜진 하나의 번호** 를 2비트 2진수로 내보냅니다.\n\n' +
-            'i0 → 0, i1 → 1, i2 → 2, i3 → 3. 여러 개가 동시에 켜지는 경우는 신경 쓰지 않아도 됩니다(테스트하지 않음).',
+            '**인코더** 는 디코더의 반대예요. 4개 입력 중 **켜진 하나의 번호** 를 2비트 2진수로 내보내요.\n' +
+            '\n' +
+            '**할 일**\n' +
+            '- i0 → 0, i1 → 1, i2 → 2, i3 → 3\n' +
+            '- 여러 개가 동시에 켜지는 경우는 신경 쓰지 않아도 돼요 (테스트하지 않음).\n' +
+            '\n' +
+            '**아이디어**\n' +
+            '출력의 각 비트를 따로 생각해 보세요. "번호의 b0이 1인 입력은 어느 것?"',
           hints: [
             '출력의 각 비트를 따로 생각하세요. 출력 b0(일의 자리)이 1이 되는 번호는? 1과 3입니다.',
             'out.b0 = i1 또는 i3, out.b1 = i2 또는 i3.',
@@ -376,9 +519,18 @@ export const chapter2: Chapter = {
         },
         en: {
           title: 'Encoder 4→2',
+          why:
+            '⌨ Like a keyboard turning the **one** key you press into a number (code).\n' +
+            '🚨 Or reporting which of several sensors went off, as a number.',
           briefing:
-            'An **encoder** is the reverse of a decoder: it outputs the **number of the one active input** as 2-bit binary.\n\n' +
-            'i0 → 0, i1 → 1, i2 → 2, i3 → 3. You can ignore cases with several inputs on (not tested).',
+            'An **encoder** is the reverse of a decoder: it outputs the **number of the one active input** as 2-bit binary.\n' +
+            '\n' +
+            '**Your job**\n' +
+            '- i0 → 0, i1 → 1, i2 → 2, i3 → 3\n' +
+            '- You can ignore cases with several inputs on (not tested).\n' +
+            '\n' +
+            '**The idea**\n' +
+            'Think about each output bit separately: "which inputs have a 1 in bit 0 of their number?"',
           hints: [
             'Think about each output bit separately. Which numbers have bit 0 (the ones place) set? 1 and 3.',
             'out.b0 = i1 or i3, out.b1 = i2 or i3.',
@@ -417,9 +569,22 @@ export const chapter2: Chapter = {
       text: {
         ko: {
           title: '보스: 신호등 제어기',
+          why:
+            '🚦 실제 신호등 제어기도 "지금 몇 번 상태인가"를 번호로 기억하고, 그 번호를 램프로 바꿔요.\n' +
+            '🧠 "번호 → 여러 출력"은 CPU의 **제어 유닛** (8장)이 하는 일과 같은 모양이에요.',
           briefing:
-            '신호등의 상태가 2비트 번호로 들어옵니다. 상태에 맞게 램프를 켜세요.\n\n' +
-            '**0 = 빨강**, **1 = 초록**, **2 = 노랑**, **3 = 빨강 + 노랑** (점검 모드).',
+            '**곤란한 상황**\n' +
+            '신호등의 상태가 2비트 번호(**state**)로 들어와요. 상태에 맞게 램프를 켜야 해요.\n' +
+            '\n' +
+            '**할 일**\n' +
+            '- **0** = 빨강\n' +
+            '- **1** = 초록\n' +
+            '- **2** = 노랑\n' +
+            '- **3** = 빨강 + 노랑 (점검 모드)',
+          coach: {
+            swapped: '두 램프가 서로 **바뀐** 것 같아요. 상태 0은 빨강, 1은 초록이에요. 램프에 이은 선을 바꿔 보세요.',
+            'condition:state=3': '**점검 모드(3)에서만** 틀려요! 이때는 빨강과 노랑이 **동시에** 켜져야 해요.',
+          },
           hints: [
             '디코더를 쓰면 상태마다 줄 하나가 켜집니다. 각 램프는 어떤 상태들에서 켜지나요?',
             '빨강 = 상태 0 또는 3, 노랑 = 상태 2 또는 3, 초록 = 상태 1. DEC2 + OR 2개로 풀 수 있습니다.',
@@ -436,9 +601,22 @@ export const chapter2: Chapter = {
         },
         en: {
           title: 'Boss: Traffic Light',
+          why:
+            '🚦 Real traffic-light controllers remember "which state are we in" as a number and turn it into lamps.\n' +
+            '🧠 "Number → several outputs" is the same shape as the CPU’s **control unit** (Chapter 8).',
           briefing:
-            'The traffic light’s state arrives as a 2-bit number. Light the lamps to match.\n\n' +
-            '**0 = red**, **1 = green**, **2 = yellow**, **3 = red + yellow** (maintenance mode).',
+            '**The problem**\n' +
+            'The traffic light’s state arrives as a 2-bit number (**state**). Light the lamps to match.\n' +
+            '\n' +
+            '**Your job**\n' +
+            '- **0** = red\n' +
+            '- **1** = green\n' +
+            '- **2** = yellow\n' +
+            '- **3** = red + yellow (maintenance mode)',
+          coach: {
+            swapped: 'Two lamps look **swapped**. State 0 is red and 1 is green. Try exchanging their wires.',
+            'condition:state=3': 'Wrong **only in maintenance mode (3)**! Then red and yellow must be on **together**.',
+          },
           hints: [
             'A decoder lights one line per state. In which states is each lamp on?',
             'Red = state 0 or 3, yellow = state 2 or 3, green = state 1. DEC2 + two ORs solves it.',

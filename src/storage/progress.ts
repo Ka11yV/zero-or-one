@@ -31,11 +31,14 @@ export function levelRecord(p: Progress, id: string): LevelRecord {
   return p.levels[id] ?? { cleared: false, stars: 0, hintsUsed: 0 };
 }
 
-/** 첫 레벨은 항상 열려 있고, 이후 레벨은 바로 앞 레벨을 클리어하면 열린다 */
+/**
+ * 첫 레벨은 항상 열려 있고, 이후 레벨은 바로 앞 레벨을 클리어하면 열린다.
+ * 이미 깬 레벨은 늘 열려 있다 — 나중에 레벨이 중간에 추가돼도 진행이 막히지 않게.
+ */
 export function isUnlocked(p: Progress, id: string): boolean {
   const i = LEVELS.findIndex((l) => l.id === id);
   if (i < 0) return false;
-  return i === 0 || levelRecord(p, LEVELS[i - 1]!.id).cleared;
+  return i === 0 || levelRecord(p, id).cleared || levelRecord(p, LEVELS[i - 1]!.id).cleared;
 }
 
 /** 별점: 회로 레벨은 NAND 개수, 프로그램 레벨은 프로그램 크기(바이트)로 */

@@ -226,13 +226,26 @@ export const chapter8: Chapter = {
       text: {
         ko: {
           title: '프로그램 카운터',
+          why:
+            '📖 책갈피처럼 "지금 몇 번째 줄을 읽는 중인지" 기억하는 칩이에요.\n' +
+            '🔁 반복문은 PC를 뒤로, if문은 PC를 앞으로 건너뛰게 하는 것뿐이에요.\n' +
+            '💻 x86 컴퓨터에서는 IP, ARM 휴대폰 CPU에서는 PC라는 이름으로 모든 CPU에 들어 있어요.',
           briefing:
-            '컴퓨터는 메모리에 적힌 명령을 **차례대로** 읽습니다. "다음에 읽을 주소"를 들고 있는 레지스터가 **프로그램 카운터(PC)**입니다.\n\n' +
-            '클럭이 올라갈 때 다음 순서로 동작하세요 (위에 있을수록 우선):\n' +
-            '- **reset = 1** → q = 0 (처음부터)\n' +
-            '- **load = 1** → q = d (점프: 다른 주소로 건너뛰기)\n' +
-            '- **inc = 1** → q = q + 1 (다음 칸으로. 255 다음은 0)\n' +
+            '**문제**\n' +
+            '컴퓨터는 메모리에 적힌 명령을 **차례대로** 읽어요. 그러려면 "다음에 읽을 주소"를 누군가 들고 있어야 해요. 그 레지스터가 **프로그램 카운터(PC)** 예요.\n' +
+            '\n' +
+            '**할 일**\n' +
+            '클럭이 올라갈 때 이렇게 동작하세요 (위에 있을수록 우선):\n' +
+            '- **reset = 1** → `q = 0` (처음부터)\n' +
+            '- **load = 1** → `q = d` (점프: 다른 주소로 건너뛰기)\n' +
+            '- **inc = 1** → `q = q + 1` (다음 칸으로. 255 다음은 0)\n' +
             '- 셋 다 0 → 그대로',
+          coach: {
+            'constant@q':
+              'q가 늘 같은 값이에요. REG8의 **load** 가 `inc ∨ load ∨ reset` 으로, **clk** 가 clk에 이어졌는지 확인해 보세요.',
+            'passthrough@q':
+              'q에 d가 그대로 나와요. 늘 d를 저장하고 있어요. 첫 MUX8의 **sel = load** 인지, 그리고 inc일 때는 `q + 1` 이 들어가는지 확인해 보세요.',
+          },
           hints: [
             '값을 기억하는 건 REG8입니다. 남은 문제는 "클럭이 올 때 무엇을 넣을지"(d)와 "언제 바꿀지"(load)입니다.',
             'q + 1은 ADD8(q, 0, cin = 1)로 만듭니다. 레지스터의 load = inc ∨ load ∨ reset. 레지스터의 d는 MUX8 두 개로 고릅니다.',
@@ -249,13 +262,26 @@ export const chapter8: Chapter = {
         },
         en: {
           title: 'Program Counter',
+          why:
+            '📖 Like a bookmark, this chip remembers "which line am I reading now?".\n' +
+            '🔁 A loop just moves the PC back; an if just makes it skip ahead.\n' +
+            '💻 Every CPU has one — called IP on x86 computers and PC on the ARM CPUs in phones.',
           briefing:
-            'A computer reads the instructions in memory **in order**. The register holding "the address to read next" is the **program counter (PC)**.\n\n' +
+            '**The problem**\n' +
+            'A computer reads the instructions in memory **in order**. Something has to hold "the address to read next". That register is the **program counter (PC)**.\n' +
+            '\n' +
+            '**Your job**\n' +
             'On a rising clock, do the following (higher lines win):\n' +
-            '- **reset = 1** → q = 0 (start over)\n' +
-            '- **load = 1** → q = d (jump to another address)\n' +
-            '- **inc = 1** → q = q + 1 (next cell; after 255 comes 0)\n' +
+            '- **reset = 1** → `q = 0` (start over)\n' +
+            '- **load = 1** → `q = d` (jump to another address)\n' +
+            '- **inc = 1** → `q = q + 1` (next cell; after 255 comes 0)\n' +
             '- all 0 → keep the value',
+          coach: {
+            'constant@q':
+              'q never changes. Check that the REG8’s **load** is `inc ∨ load ∨ reset` and its **clk** is wired to clk.',
+            'passthrough@q':
+              'd comes straight out of q — it always stores d. Is the first MUX8’s **sel = load**, and does `q + 1` go in when inc is on?',
+          },
           hints: [
             'A REG8 remembers the value. The rest is "what to store on the clock" (d) and "when to change" (load).',
             'q + 1 is ADD8(q, 0, cin = 1). The register’s load = inc ∨ load ∨ reset. Choose its d with two MUX8s.',
@@ -302,14 +328,29 @@ export const chapter8: Chapter = {
       text: {
         ko: {
           title: '분기 판단기',
+          why:
+            '🎮 "HP가 0이면 게임 오버", 🔐 "비밀번호가 같으면 문 열기" — 프로그램의 모든 if문은 CPU 안에서 **점프할까 말까** 하는 1비트 판단으로 바뀌어요.\n' +
+            '이번 레벨이 바로 그 1비트를 만드는 회로예요.',
           briefing:
-            '이 컴퓨터의 명령은 4비트 번호(**opcode**)로 구분합니다. 그중 4개가 **점프** 명령입니다.\n\n' +
+            '**문제**\n' +
+            '프로그램의 if문은 CPU 안에서 "**지금 점프할까?**" 라는 1비트 판단이 돼요.\n' +
+            '\n' +
+            '**점프 명령**\n' +
+            '이 컴퓨터의 명령은 4비트 번호(**opcode**)로 구분해요. 그중 4개가 점프예요.\n' +
             '- op = 9 (**JMP**): 무조건 점프 → take = 1\n' +
             '- op = 10 (**JZ**): z 플래그가 1일 때만\n' +
             '- op = 11 (**JC**): c 플래그가 1일 때만\n' +
             '- op = 12 (**JN**): n 플래그가 1일 때만\n' +
-            '- 다른 명령: take = 0\n\n' +
-            '"지금 점프해야 하는가?"를 판단하는 회로를 만드세요. 플래그 z, n, c는 7-2에서 만든 ALU8이 내는 그 플래그입니다.',
+            '- 다른 명령: take = 0\n' +
+            '\n' +
+            '**할 일**\n' +
+            '"지금 점프해야 하는가?"를 판단하는 출력 take를 만드세요. 플래그 z, n, c는 7-2에서 만든 ALU8이 내는 그 플래그예요.',
+          coach: {
+            'inverted@take':
+              'take가 정반대예요. 점프할 때 1, 아닐 때 0이에요. 마지막에 NOT이나 NOR가 들어가지 않았나요?',
+            'constant@take':
+              'take가 늘 같은 값이에요. **DEC4(op)** 의 9~12번 줄을 꺼내 각각 플래그와 AND 한 뒤 OR로 모아 보세요.',
+          },
           hints: [
             'opcode가 몇 번인지 알아내는 데 딱 맞는 칩이 있습니다.',
             'DEC4(op)의 9, 10, 11, 12번 줄을 쓰세요. 10번 줄은 z와 AND.',
@@ -326,14 +367,29 @@ export const chapter8: Chapter = {
         },
         en: {
           title: 'Branch Decider',
+          why:
+            '🎮 "Game over when HP hits 0", 🔐 "open the door if the password matches" — every if in a program becomes a 1-bit **jump or not** decision inside the CPU.\n' +
+            'This level builds exactly that bit.',
           briefing:
-            'Instructions in this computer are identified by a 4-bit number (the **opcode**). Four of them are **jumps**.\n\n' +
+            '**The problem**\n' +
+            'An if in a program becomes a 1-bit decision inside the CPU: "**jump now?**"\n' +
+            '\n' +
+            '**Jump instructions**\n' +
+            'Instructions are identified by a 4-bit number (the **opcode**). Four of them are jumps.\n' +
             '- op = 9 (**JMP**): always jump → take = 1\n' +
             '- op = 10 (**JZ**): only if flag z is 1\n' +
             '- op = 11 (**JC**): only if flag c is 1\n' +
             '- op = 12 (**JN**): only if flag n is 1\n' +
-            '- any other instruction: take = 0\n\n' +
-            'Build the circuit that decides "should we jump now?". z, n and c are the flags your ALU8 from 7-2 produces.',
+            '- any other instruction: take = 0\n' +
+            '\n' +
+            '**Your job**\n' +
+            'Build the output take that decides "should we jump now?". z, n and c are the flags your ALU8 from 7-2 produces.',
+          coach: {
+            'inverted@take':
+              'take is the exact opposite: 1 when jumping, 0 otherwise. Is there an extra NOT or NOR at the end?',
+            'constant@take':
+              'take never changes. Pull lines 9–12 out of **DEC4(op)**, AND each with its flag, and OR them together.',
+          },
           hints: [
             'There is a chip that is perfect for "which opcode is it?".',
             'Use lines 9, 10, 11 and 12 of DEC4(op). AND line 10 with z, and so on.',
@@ -367,13 +423,26 @@ export const chapter8: Chapter = {
       text: {
         ko: {
           title: '단계 카운터',
+          why:
+            '🍳 요리 레시피처럼 CPU도 명령 하나를 **단계별로** 처리해요: 명령 가져오기 → 재료(피연산자) 가져오기 → 실행.\n' +
+            '⏱ 이 카운터는 "지금 몇 번째 단계인지" 알려 주는 시계 바늘이에요.',
           briefing:
-            'CPU는 명령 하나를 여러 **단계**(T0, T1, T2 …)에 나눠 실행합니다. 메모리에서 명령을 가져오고(T0, T1), 피연산자를 가져오고(T2, T3), 실행합니다(T3, T4).\n\n' +
-            '0 → 1 → 2 → 3 → 4 → 0 … 을 세는 카운터 t를 만드세요. 클럭이 올라갈 때 (위에 있을수록 우선):\n' +
+            '**문제**\n' +
+            'CPU는 명령 하나를 한 번에 끝내지 못해요. 그래서 여러 **단계**(T0, T1, T2 …)로 나눠 실행해요.\n' +
+            '- T0, T1: 메모리에서 명령 가져오기\n' +
+            '- T2, T3: 피연산자 가져오기\n' +
+            '- T3, T4: 실행\n' +
+            '\n' +
+            '**할 일**\n' +
+            '`0 → 1 → 2 → 3 → 4 → 0 …` 을 세는 카운터 t를 만드세요. 클럭이 올라갈 때 (위에 있을수록 우선):\n' +
             '- **reset = 1** → t = 0\n' +
             '- **hold = 1** → 그대로 (컴퓨터가 멈췄을 때)\n' +
-            '- **t_rst = 1** 이거나 지금 t = 4 → t = 0 (짧은 명령은 T3에서 일찍 끝남)\n' +
+            '- **t_rst = 1** 이거나 지금 t = 4 → t = 0 (짧은 명령은 T3에서 일찍 끝나요)\n' +
             '- 그 외 → t + 1',
+          coach: {
+            'constant@t':
+              't가 늘 같은 값이에요. 레지스터들의 **load = 1**(CONST1)과 **clk** 가 이어졌는지, 다음 값으로 `t + 1` 이 들어가는지 확인해 보세요.',
+          },
           hints: [
             '5장의 COUNTER4와 비슷하지만, 4에서 0으로 돌아가고 "그대로" 기능이 있습니다. 3비트 값을 REG1 세 개(load = 1)나 다른 레지스터에 담아 보세요.',
             't + 1은 ADD4(t를 4비트로, 0, cin = 1). "0으로 갈 때" = t_rst ∨ (t = 4). t = 4는 DEC3(t)의 4번 줄.',
@@ -390,13 +459,26 @@ export const chapter8: Chapter = {
         },
         en: {
           title: 'Step Counter',
+          why:
+            '🍳 Like a recipe, a CPU handles one instruction **step by step**: fetch the instruction → fetch the ingredients (operand) → execute.\n' +
+            '⏱ This counter is the clock hand saying "which step are we on?".',
           briefing:
-            'A CPU runs one instruction over several **steps** (T0, T1, T2 …): fetch the instruction (T0, T1), fetch the operand (T2, T3), execute (T3, T4).\n\n' +
-            'Build a counter t that goes 0 → 1 → 2 → 3 → 4 → 0 … On a rising clock (higher lines win):\n' +
+            '**The problem**\n' +
+            'A CPU cannot finish an instruction in one go, so it runs it over several **steps** (T0, T1, T2 …):\n' +
+            '- T0, T1: fetch the instruction from memory\n' +
+            '- T2, T3: fetch the operand\n' +
+            '- T3, T4: execute\n' +
+            '\n' +
+            '**Your job**\n' +
+            'Build a counter t that goes `0 → 1 → 2 → 3 → 4 → 0 …` On a rising clock (higher lines win):\n' +
             '- **reset = 1** → t = 0\n' +
             '- **hold = 1** → stay (when the computer has halted)\n' +
             '- **t_rst = 1** or t is 4 → t = 0 (short instructions finish early at T3)\n' +
             '- otherwise → t + 1',
+          coach: {
+            'constant@t':
+              't never changes. Check the registers have **load = 1** (CONST1) and **clk** wired, and that `t + 1` goes into d.',
+          },
           hints: [
             'Like COUNTER4 from chapter 5, but it wraps from 4 to 0 and can hold. Keep the 3-bit value in three REG1s (load = 1) or another register.',
             't + 1 is ADD4(t widened to 4 bits, 0, cin = 1). "Go to 0" = t_rst ∨ (t = 4); t = 4 is line 4 of DEC3(t).',
@@ -440,20 +522,56 @@ export const chapter8: Chapter = {
       text: {
         ko: {
           title: '제어 유닛 — CPU의 지휘자',
+          why:
+            '🎼 오케스트라 지휘자처럼, 제어 유닛은 각 부품에게 **언제 무엇을 할지** 신호를 보내요.\n' +
+            '🧾 "ADD 0x80" 한 줄도 CPU 안에서는 "T3에 주소를 넣고, T4에 더해서 저장" 같은 신호 시간표예요.\n' +
+            '💡 실제 CPU 중에는 이 표를 작은 메모리에 적어 두고 읽는 것(마이크로코드)도 있어요.',
           briefing:
-            '명령(op)과 단계(t)를 보고 CPU의 각 부품에게 **지금 무엇을 할지** 신호를 보내는 회로입니다. 나오는 선:\n' +
+            '**하는 일**\n' +
+            '명령(op)과 단계(t)를 보고, CPU의 각 부품에게 **지금 무엇을 할지** 신호를 보내요.\n' +
+            '\n' +
+            '**나오는 선**\n' +
             '- **mar_ld**: 주소 레지스터(MAR)에 저장. **mar_sel** = 0이면 PC 값, 1이면 메모리에서 읽은 값을\n' +
-            '- **ir_ld**: 명령 레지스터에 메모리 값 저장 · **pc_inc** / **pc_ld**: PC 증가 / 메모리 값으로 점프\n' +
-            '- **a_ld**: A 레지스터에 ALU 결과 저장 (플래그도 함께), **alu**: ALU8 연산 번호, **b_in**: ALU의 b에 메모리 대신 키패드 입력(IN)\n' +
-            '- **ram_wr**: A를 메모리에 쓰기 · **out_ld**: A를 출력 레지스터로 · **halt**: 정지 · **t_rst**: 단계를 T0으로\n\n' +
-            '**모든 명령 공통**: T0 → mar_ld · T1 → ir_ld, pc_inc · T2 → mar_ld\n\n' +
+            '- **ir_ld**: 명령 레지스터에 메모리 값 저장\n' +
+            '- **pc_inc** / **pc_ld**: PC 증가 / 메모리 값으로 점프\n' +
+            '- **a_ld**: A 레지스터에 ALU 결과 저장 (플래그도 함께)\n' +
+            '- **alu**: ALU8 연산 번호\n' +
+            '- **b_in**: ALU의 b에 메모리 대신 키패드 입력(IN)\n' +
+            '- **ram_wr**: A를 메모리에 쓰기 · **out_ld**: A를 출력 레지스터로\n' +
+            '- **halt**: 정지 · **t_rst**: 단계를 T0으로\n' +
+            '\n' +
+            '**T0 ~ T2 (모든 명령 공통)**\n' +
+            '- T0 → mar_ld\n' +
+            '- T1 → ir_ld, pc_inc\n' +
+            '- T2 → mar_ld\n' +
+            '\n' +
             '**T3**\n' +
             '- 메모리 명령(op 2~7: LDA, STA, ADD, SUB, AND, OR): mar_ld, mar_sel (피연산자를 주소로)\n' +
-            '- NOP(0): pc_inc, t_rst · LDI(1): a_ld, alu = 7, pc_inc, t_rst · NOT(8): a_ld, alu = 5, pc_inc, t_rst\n' +
-            '- JMP(9): pc_ld, t_rst · JZ/JC/JN(10~12): take면 pc_ld, 아니면 pc_inc · 그리고 t_rst\n' +
-            '- IN(13): a_ld, alu = 7, b_in, pc_inc, t_rst · OUT(14): out_ld, pc_inc, t_rst · HALT(15): halt\n\n' +
-            '**T4** (메모리 명령만): pc_inc, t_rst, 그리고 LDA: a_ld, alu = 7 · STA: ram_wr · ADD: a_ld, alu = 0 · SUB: a_ld, alu = 1 · AND: a_ld, alu = 2 · OR: a_ld, alu = 3. HALT(15)는 T4에서도 halt.\n\n' +
-            '표에 없는 경우는 모두 0입니다. 정확한 정답은 **진리표** 탭에 있습니다 (t = 0~4만 테스트).',
+            '- NOP(0): pc_inc, t_rst\n' +
+            '- LDI(1): a_ld, `alu = 7`, pc_inc, t_rst\n' +
+            '- NOT(8): a_ld, `alu = 5`, pc_inc, t_rst\n' +
+            '- JMP(9): pc_ld, t_rst\n' +
+            '- JZ/JC/JN(10~12): take면 pc_ld, 아니면 pc_inc · 그리고 t_rst\n' +
+            '- IN(13): a_ld, `alu = 7`, b_in, pc_inc, t_rst\n' +
+            '- OUT(14): out_ld, pc_inc, t_rst\n' +
+            '- HALT(15): halt\n' +
+            '\n' +
+            '**T4 (메모리 명령만)**\n' +
+            '공통으로 pc_inc, t_rst. 그리고\n' +
+            '- LDA: a_ld, `alu = 7`\n' +
+            '- STA: ram_wr\n' +
+            '- ADD: a_ld, `alu = 0` · SUB: a_ld, `alu = 1`\n' +
+            '- AND: a_ld, `alu = 2` · OR: a_ld, `alu = 3`\n' +
+            '- HALT(15)는 T4에서도 halt\n' +
+            '\n' +
+            '**나머지**\n' +
+            '표에 없는 경우는 모두 0이에요. 정확한 정답은 **진리표** 탭에 있어요 (t = 0~4만 테스트).',
+          coach: {
+            swapped:
+              '제어선 두 개가 서로 바뀐 것 같아요 (예: pc_inc ↔ pc_ld, mar_ld ↔ ir_ld). 출력 핀 이름과 선을 다시 맞춰 보세요.',
+            'constant@t_rst':
+              't_rst가 늘 같은 값이에요. `t_rst = T3 ∧ (메모리 명령도 HALT도 아님) ∨ T4 ∧ 메모리 명령` 이에요.',
+          },
           hints: [
             'DEC4(op)와 DEC3(t)로 "지금 어떤 명령인가", "지금 몇 단계인가"를 줄 하나씩으로 바꾸세요. 그다음은 출력마다 AND와 OR입니다.',
             '자주 쓰는 묶음을 먼저 만드세요: mem = y2 ∨ … ∨ y7. 예: mar_ld = T0 ∨ T2 ∨ (T3 ∧ mem), ir_ld = T1, ram_wr = T4 ∧ y3, out_ld = T3 ∧ y14, b_in = T3 ∧ y13, halt = (T3 ∨ T4) ∧ y15.',
@@ -471,20 +589,56 @@ export const chapter8: Chapter = {
         },
         en: {
           title: 'Control Unit — The Conductor',
+          why:
+            '🎼 Like an orchestra conductor, the control unit tells every part **when to do what**.\n' +
+            '🧾 Even one line, "ADD 0x80", is a timetable of signals inside the CPU: "address in at T3, add and store at T4".\n' +
+            '💡 Some real CPUs store this table in a small memory and read it out — that is microcode.',
           briefing:
-            'Looking at the instruction (op) and step (t), this circuit tells every part of the CPU **what to do right now**. Its lines:\n' +
+            '**What it does**\n' +
+            'Looking at the instruction (op) and step (t), it tells every part of the CPU **what to do right now**.\n' +
+            '\n' +
+            '**Its lines**\n' +
             '- **mar_ld**: store into the address register (MAR). **mar_sel** = 0 stores the PC, 1 stores the value read from memory\n' +
-            '- **ir_ld**: store the memory value into the instruction register · **pc_inc** / **pc_ld**: increment PC / jump to the memory value\n' +
-            '- **a_ld**: store the ALU result into register A (flags too), **alu**: the ALU8 op number, **b_in**: feed the keypad input into ALU b instead of memory (IN)\n' +
-            '- **ram_wr**: write A to memory · **out_ld**: copy A to the output register · **halt**: stop · **t_rst**: back to step T0\n\n' +
-            '**Every instruction**: T0 → mar_ld · T1 → ir_ld, pc_inc · T2 → mar_ld\n\n' +
+            '- **ir_ld**: store the memory value into the instruction register\n' +
+            '- **pc_inc** / **pc_ld**: increment PC / jump to the memory value\n' +
+            '- **a_ld**: store the ALU result into register A (flags too)\n' +
+            '- **alu**: the ALU8 op number\n' +
+            '- **b_in**: feed the keypad input into ALU b instead of memory (IN)\n' +
+            '- **ram_wr**: write A to memory · **out_ld**: copy A to the output register\n' +
+            '- **halt**: stop · **t_rst**: back to step T0\n' +
+            '\n' +
+            '**T0 – T2 (every instruction)**\n' +
+            '- T0 → mar_ld\n' +
+            '- T1 → ir_ld, pc_inc\n' +
+            '- T2 → mar_ld\n' +
+            '\n' +
             '**T3**\n' +
             '- memory instructions (op 2–7: LDA, STA, ADD, SUB, AND, OR): mar_ld, mar_sel (use the operand as an address)\n' +
-            '- NOP(0): pc_inc, t_rst · LDI(1): a_ld, alu = 7, pc_inc, t_rst · NOT(8): a_ld, alu = 5, pc_inc, t_rst\n' +
-            '- JMP(9): pc_ld, t_rst · JZ/JC/JN(10–12): pc_ld if take, otherwise pc_inc · plus t_rst\n' +
-            '- IN(13): a_ld, alu = 7, b_in, pc_inc, t_rst · OUT(14): out_ld, pc_inc, t_rst · HALT(15): halt\n\n' +
-            '**T4** (memory instructions only): pc_inc, t_rst, plus LDA: a_ld, alu = 7 · STA: ram_wr · ADD: a_ld, alu = 0 · SUB: a_ld, alu = 1 · AND: a_ld, alu = 2 · OR: a_ld, alu = 3. HALT(15) also outputs halt at T4.\n\n' +
+            '- NOP(0): pc_inc, t_rst\n' +
+            '- LDI(1): a_ld, `alu = 7`, pc_inc, t_rst\n' +
+            '- NOT(8): a_ld, `alu = 5`, pc_inc, t_rst\n' +
+            '- JMP(9): pc_ld, t_rst\n' +
+            '- JZ/JC/JN(10–12): pc_ld if take, otherwise pc_inc · plus t_rst\n' +
+            '- IN(13): a_ld, `alu = 7`, b_in, pc_inc, t_rst\n' +
+            '- OUT(14): out_ld, pc_inc, t_rst\n' +
+            '- HALT(15): halt\n' +
+            '\n' +
+            '**T4 (memory instructions only)**\n' +
+            'Always pc_inc, t_rst, plus\n' +
+            '- LDA: a_ld, `alu = 7`\n' +
+            '- STA: ram_wr\n' +
+            '- ADD: a_ld, `alu = 0` · SUB: a_ld, `alu = 1`\n' +
+            '- AND: a_ld, `alu = 2` · OR: a_ld, `alu = 3`\n' +
+            '- HALT(15) also outputs halt at T4\n' +
+            '\n' +
+            '**Everything else**\n' +
             'Everything not listed is 0. The exact answer is in the **truth table** tab (only t = 0–4 is tested).',
+          coach: {
+            swapped:
+              'Two control lines look swapped (e.g. pc_inc ↔ pc_ld, mar_ld ↔ ir_ld). Re-check output names against their wires.',
+            'constant@t_rst':
+              't_rst never changes. It is `t_rst = T3 ∧ (neither memory nor HALT) ∨ T4 ∧ memory instruction`.',
+          },
           hints: [
             'Use DEC4(op) and DEC3(t) to turn "which instruction" and "which step" into single lines. After that it is AND and OR for each output.',
             'Build common groups first: mem = y2 ∨ … ∨ y7. Then e.g. mar_ld = T0 ∨ T2 ∨ (T3 ∧ mem), ir_ld = T1, ram_wr = T4 ∧ y3, out_ld = T3 ∧ y14, b_in = T3 ∧ y13, halt = (T3 ∨ T4) ∧ y15.',
@@ -541,18 +695,40 @@ export const chapter8: Chapter = {
       text: {
         ko: {
           title: 'CPU 조립',
+          why:
+            '💻 지금 쓰는 컴퓨터·휴대폰·게임기가 모두 이 구조예요: **프로그램과 데이터를 같은 메모리에** 두고, 가져오기 → 해석 → 실행을 끝없이 반복해요.\n' +
+            '🧩 지금까지 만든 PC, 단계 카운터, 제어 유닛, ALU, RAM이 여기서 하나로 합쳐져요.',
           briefing:
-            '드디어 **CPU**입니다. 만든 부품을 모두 연결해, 메모리의 프로그램을 스스로 읽고 실행하는 기계를 완성하세요.\n\n' +
-            '**부품**: RAM256(프로그램과 데이터를 함께 저장), PC, MAR(주소 레지스터, REG8), IR(명령 레지스터, REG8), A(누산기, REG8), 플래그 z·n·c(REG1 3개), OUT(출력 레지스터, REG8), HALT(REG1), ALU8, BRANCH, STEP, CONTROL\n\n' +
+            '**드디어 CPU**\n' +
+            '만든 부품을 모두 연결해, 메모리의 프로그램을 스스로 읽고 실행하는 기계를 완성하세요.\n' +
+            '\n' +
+            '**부품**\n' +
+            '- RAM256: 프로그램과 데이터를 함께 저장\n' +
+            '- PC · STEP · CONTROL · BRANCH · ALU8\n' +
+            '- REG8 4개: MAR(주소 레지스터), IR(명령 레지스터), A(누산기), OUT(출력 레지스터)\n' +
+            '- REG1 4개: 플래그 z·n·c, HALT\n' +
+            '\n' +
             '**연결**\n' +
-            '- RAM 주소 = MAR, 쓰는 값 = A, write = ram_wr. 메모리에서 읽은 값을 **q**라 합시다.\n' +
-            '- MAR ← (mar_sel ? q : PC), load = mar_ld · IR ← q, load = ir_ld · op = IR의 위쪽 4비트(4~7번)\n' +
+            '- RAM 주소 = MAR, 쓰는 값 = A, write = ram_wr. 메모리에서 읽은 값을 **q** 라 해요.\n' +
+            '- MAR ← `mar_sel ? q : PC`, load = mar_ld\n' +
+            '- IR ← q, load = ir_ld · op = IR의 위쪽 4비트(4~7번)\n' +
             '- PC: d = q, inc = pc_inc, load = pc_ld, reset = reset\n' +
-            '- ALU8: a = A, b = (b_in ? in : q), op = alu → A ← 결과, 플래그 ← z·n·c, load = a_ld\n' +
-            '- BRANCH(op, 플래그) → take → CONTROL(op, t, take) · STEP(t_rst, hold = HALT, reset)\n' +
-            '- OUT ← A, load = out_ld · HALT: halt 신호면 1, reset이면 0\n\n' +
-            '**프로그램 적재**: run = 0인 동안에는 RAM의 주소·값·write를 **pa, pd, pw**에서 받습니다 (MUX로 고르기). 테스트가 이 길로 프로그램을 넣은 뒤 reset하고 run = 1로 실행합니다.\n\n' +
-            '**출력**: out = OUT, ow = out_ld, halt = HALT, pc = PC, a = A',
+            '- ALU8: a = A, b = `b_in ? in : q`, op = alu → A ← 결과, 플래그 ← z·n·c, load = a_ld\n' +
+            '- BRANCH(op, 플래그) → take → CONTROL(op, t, take)\n' +
+            '- STEP(t_rst, hold = HALT, reset)\n' +
+            '- OUT ← A, load = out_ld · HALT: halt 신호면 1, reset이면 0\n' +
+            '\n' +
+            '**프로그램 적재**\n' +
+            'run = 0인 동안에는 RAM의 주소·값·write를 **pa, pd, pw** 에서 받아요 (MUX로 고르기). 테스트가 이 길로 프로그램을 넣은 뒤 reset하고 run = 1로 실행해요.\n' +
+            '\n' +
+            '**출력**\n' +
+            '- out = OUT, ow = out_ld, halt = HALT, pc = PC, a = A',
+          coach: {
+            'constant@pc':
+              'pc가 움직이지 않아요. PC의 **inc / load** 가 CONTROL의 pc_inc / pc_ld에, **clk** 가 clk에 이어졌는지, run = 1일 때 RAM 주소가 **MAR** 에서 오는지 확인해 보세요.',
+            'constant@halt':
+              'halt가 늘 같은 값이에요. HALT 레지스터는 REG1(`d = NOT reset`, `load = halt ∨ reset`)이에요.',
+          },
           hints: [
             '한꺼번에 하지 말고 길 하나씩 연결하세요. 먼저 "명령 가져오기": PC → MAR → RAM 주소, RAM q → IR. CONTROL의 T0~T2 신호만으로도 IR에 첫 명령이 들어오는지 확인할 수 있습니다.',
             'RAM 앞의 MUX 3개: addr = MUX8(pa, MAR, sel = run), d = MUX8(pd, A, sel = run), write = MUX(pw, ram_wr, sel = run). op = IR의 SPLIT8 → 4~7번 비트 → MERGE4.',
@@ -570,18 +746,40 @@ export const chapter8: Chapter = {
         },
         en: {
           title: 'Assembling the CPU',
+          why:
+            '💻 The computer, phone or console you use works exactly like this: **program and data in the same memory**, fetch → decode → execute, over and over.\n' +
+            '🧩 The PC, step counter, control unit, ALU and RAM you built all come together here.',
           briefing:
-            'At last, the **CPU**. Connect all your parts into a machine that reads and runs the program in memory by itself.\n\n' +
-            '**Parts**: RAM256 (program and data together), PC, MAR (address register, REG8), IR (instruction register, REG8), A (accumulator, REG8), flags z·n·c (three REG1), OUT (output register, REG8), HALT (REG1), ALU8, BRANCH, STEP, CONTROL\n\n' +
+            '**At last, the CPU**\n' +
+            'Connect all your parts into a machine that reads and runs the program in memory by itself.\n' +
+            '\n' +
+            '**Parts**\n' +
+            '- RAM256: program and data together\n' +
+            '- PC · STEP · CONTROL · BRANCH · ALU8\n' +
+            '- four REG8s: MAR (address register), IR (instruction register), A (accumulator), OUT (output register)\n' +
+            '- four REG1s: flags z·n·c, HALT\n' +
+            '\n' +
             '**Wiring**\n' +
             '- RAM address = MAR, data in = A, write = ram_wr. Call the value read from memory **q**.\n' +
-            '- MAR ← (mar_sel ? q : PC), load = mar_ld · IR ← q, load = ir_ld · op = the upper 4 bits of IR (bits 4–7)\n' +
+            '- MAR ← `mar_sel ? q : PC`, load = mar_ld\n' +
+            '- IR ← q, load = ir_ld · op = the upper 4 bits of IR (bits 4–7)\n' +
             '- PC: d = q, inc = pc_inc, load = pc_ld, reset = reset\n' +
-            '- ALU8: a = A, b = (b_in ? in : q), op = alu → A ← result, flags ← z·n·c, load = a_ld\n' +
-            '- BRANCH(op, flags) → take → CONTROL(op, t, take) · STEP(t_rst, hold = HALT, reset)\n' +
-            '- OUT ← A, load = out_ld · HALT: 1 on halt, 0 on reset\n\n' +
-            '**Loading a program**: while run = 0, the RAM takes its address, data and write from **pa, pd, pw** (select with MUXes). The test loads the program this way, resets, then runs with run = 1.\n\n' +
-            '**Outputs**: out = OUT, ow = out_ld, halt = HALT, pc = PC, a = A',
+            '- ALU8: a = A, b = `b_in ? in : q`, op = alu → A ← result, flags ← z·n·c, load = a_ld\n' +
+            '- BRANCH(op, flags) → take → CONTROL(op, t, take)\n' +
+            '- STEP(t_rst, hold = HALT, reset)\n' +
+            '- OUT ← A, load = out_ld · HALT: 1 on halt, 0 on reset\n' +
+            '\n' +
+            '**Loading a program**\n' +
+            'While run = 0, the RAM takes its address, data and write from **pa, pd, pw** (select with MUXes). The test loads the program this way, resets, then runs with run = 1.\n' +
+            '\n' +
+            '**Outputs**\n' +
+            '- out = OUT, ow = out_ld, halt = HALT, pc = PC, a = A',
+          coach: {
+            'constant@pc':
+              'pc never moves. Check the PC’s **inc / load** go to CONTROL’s pc_inc / pc_ld, its **clk** to clk, and that the RAM address comes from **MAR** when run = 1.',
+            'constant@halt':
+              'halt never changes. The HALT register is a REG1 with `d = NOT reset` and `load = halt ∨ reset`.',
+          },
           hints: [
             'Do not wire everything at once — one path at a time. Start with "fetch": PC → MAR → RAM address, RAM q → IR. With only CONTROL’s T0–T2 signals you can already see the first instruction land in IR.',
             'Three MUXes in front of the RAM: addr = MUX8(pa, MAR, sel = run), d = MUX8(pd, A, sel = run), write = MUX(pw, ram_wr, sel = run). op = SPLIT8 of IR → bits 4–7 → MERGE4.',
@@ -661,10 +859,20 @@ export const chapter8: Chapter = {
       text: {
         ko: {
           title: '첫 프로그램: 덧셈',
+          why:
+            '🔤 Python이든 C든, 모든 프로그램은 결국 이런 **기계어 숫자** 로 바뀌어야 CPU가 실행할 수 있어요.\n' +
+            '🛠 그 번역을 해 주는 프로그램이 컴파일러예요. 이번엔 여러분이 직접 CPU의 말로 써 봐요.',
           briefing:
-            '이제부터는 회로가 아니라 **프로그램**을 만듭니다. 실행하는 것은 여러분이 8-5에서 만든 **바로 그 CPU 칩**입니다.\n\n' +
-            '메모리 **0x80**번지와 **0x81**번지에 수가 하나씩 들어 있습니다. 두 수를 더해 **OUT**으로 내보낸 뒤 **HALT** 하세요. 결과가 255를 넘으면 아래 8비트만 남습니다(200 + 100 → 44).\n\n' +
-            '왼쪽 편집기에 명령을 쓰면 바로 기계어로 바뀌어 메모리에 들어갑니다. **▶ 실행**이나 **한 명령씩**으로 CPU가 어떻게 움직이는지 보세요. 아래 명령어 표를 참고하세요.',
+            '**이제부터는 프로그램**\n' +
+            '회로 대신 **프로그램** 을 만들어요. 실행하는 건 여러분이 8-5에서 만든 **바로 그 CPU 칩** 이에요.\n' +
+            '\n' +
+            '**할 일**\n' +
+            '- 메모리 **0x80** 번지와 **0x81** 번지에 수가 하나씩 있어요.\n' +
+            '- 두 수를 더해 **OUT** 으로 내보낸 뒤 **HALT** 하세요.\n' +
+            '- 255를 넘으면 아래 8비트만 남아요 (`200 + 100 → 44`).\n' +
+            '\n' +
+            '**사용법**\n' +
+            '왼쪽 편집기에 명령을 쓰면 바로 기계어로 바뀌어 메모리에 들어가요. **▶ 실행** 이나 **한 명령씩** 으로 CPU가 어떻게 움직이는지 보세요. 아래 명령어 표를 참고하세요.',
           hints: [
             'A 레지스터는 계산용 손 하나입니다. 메모리에서 하나를 집어 들고(LDA), 다른 하나를 더하면(ADD) 됩니다.',
             'LDA 0x80 → A = 첫 번째 수. ADD 0x81 → A = A + 두 번째 수.',
@@ -681,9 +889,19 @@ export const chapter8: Chapter = {
         },
         en: {
           title: 'First Program: Addition',
+          why:
+            '🔤 Whether Python or C, every program must become **machine-code numbers** like these before a CPU can run it.\n' +
+            '🛠 The program that does that translation is a compiler. This time you write in the CPU’s own language.',
           briefing:
-            'From now on you write **programs**, not circuits. They run on **the very CPU chip** you built in 8-5.\n\n' +
-            'Memory addresses **0x80** and **0x81** each hold a number. Add them, send the sum with **OUT**, then **HALT**. If the result passes 255 only the low 8 bits remain (200 + 100 → 44).\n\n' +
+            '**Programs from now on**\n' +
+            'You write **programs**, not circuits. They run on **the very CPU chip** you built in 8-5.\n' +
+            '\n' +
+            '**Your job**\n' +
+            '- Memory addresses **0x80** and **0x81** each hold a number.\n' +
+            '- Add them, send the sum with **OUT**, then **HALT**.\n' +
+            '- Past 255 only the low 8 bits remain (`200 + 100 → 44`).\n' +
+            '\n' +
+            '**How to use it**\n' +
             'Whatever you type on the left is assembled into machine code and loaded into memory immediately. Use **▶ Run** or **step by instruction** to watch the CPU work. See the instruction table below.',
           hints: [
             'Register A is your one working hand. Pick one number up from memory (LDA) and add the other (ADD).',
@@ -713,10 +931,17 @@ export const chapter8: Chapter = {
       text: {
         ko: {
           title: '카운트다운',
+          why:
+            '🔁 `for`, `while` 같은 반복문은 CPU 안에 따로 없어요. **뒤로 점프 + 빠져나갈 조건** 의 조합일 뿐이에요.\n' +
+            '🎮 게임이 쉬지 않고 화면을 다시 그리는 것도, 운영체제가 입력을 기다리는 것도 이런 반복이에요.',
           briefing:
-            '10부터 0까지 **11번** OUT 하고 HALT 하세요: 10, 9, 8, … 1, 0.\n\n' +
-            '같은 명령을 11번 쓰지 말고 **반복(loop)**을 만들어 보세요. 반복을 멈추려면 **조건 분기**가 필요합니다: JZ는 바로 앞 계산의 결과가 0이었을 때만 점프합니다.\n\n' +
-            '뺄셈(SUB)은 메모리에 있는 값을 뺍니다. 1을 빼려면 메모리 어딘가에 1을 적어 두세요: `one: .db 1` 처럼.',
+            '**할 일**\n' +
+            '10부터 0까지 **11번** OUT 하고 HALT 하세요: `10, 9, 8, … 1, 0`\n' +
+            '\n' +
+            '**요령**\n' +
+            '- 같은 명령을 11번 쓰지 말고 **반복(loop)** 을 만들어 보세요.\n' +
+            '- 반복을 멈추려면 **조건 분기** 가 필요해요: JZ는 바로 앞 계산의 결과가 0이었을 때만 점프해요.\n' +
+            '- SUB는 메모리에 있는 값을 빼요. 1을 빼려면 메모리 어딘가에 1을 적어 두세요: `one: .db 1`',
           hints: [
             '구조: A = 10 → (반복 시작) OUT → 0이면 끝 → 1 빼기 → 반복 시작으로.',
             'JMP loop는 무조건 loop 라벨로 돌아갑니다. JZ end는 z 플래그가 1일 때만 end로 갑니다. z 플래그는 A를 바꾼 마지막 명령(LDI, SUB…)이 정합니다.',
@@ -733,10 +958,17 @@ export const chapter8: Chapter = {
         },
         en: {
           title: 'Countdown',
+          why:
+            '🔁 There is no `for` or `while` inside a CPU. They are just a **backward jump plus an exit condition**.\n' +
+            '🎮 A game redrawing its screen nonstop and an operating system waiting for input are loops like this.',
           briefing:
-            'OUT **11 times** from 10 down to 0, then HALT: 10, 9, 8, … 1, 0.\n\n' +
-            'Instead of writing the same instruction 11 times, build a **loop**. To stop it you need a **conditional branch**: JZ jumps only when the previous result was 0.\n\n' +
-            'SUB subtracts a value stored in memory. To subtract 1, put a 1 somewhere in memory, like `one: .db 1`.',
+            '**Your job**\n' +
+            'OUT **11 times** from 10 down to 0, then HALT: `10, 9, 8, … 1, 0`\n' +
+            '\n' +
+            '**Tips**\n' +
+            '- Instead of writing the same instruction 11 times, build a **loop**.\n' +
+            '- To stop it you need a **conditional branch**: JZ jumps only when the previous result was 0.\n' +
+            '- SUB subtracts a value stored in memory. To subtract 1, put a 1 somewhere in memory: `one: .db 1`',
           hints: [
             'Shape: A = 10 → (loop) OUT → stop if 0 → subtract 1 → back to loop.',
             'JMP loop always goes back to the loop label. JZ end goes to end only when the z flag is 1. The z flag is set by the last instruction that changed A (LDI, SUB…).',
@@ -771,9 +1003,17 @@ export const chapter8: Chapter = {
       text: {
         ko: {
           title: '곱셈 — 하드웨어에 없는 연산',
+          why:
+            '🧮 초기 8비트 컴퓨터(Apple II, 패미컴의 6502 CPU)에는 곱셈 명령이 없어서, 이렇게 **프로그램으로** 곱했어요.\n' +
+            '⚖ 회로로 만들면 빠르지만 크고, 프로그램으로 하면 작지만 느려요. 컴퓨터 설계의 영원한 맞바꿈이에요.',
           briefing:
-            '여러분의 CPU에는 곱셈 명령이 없습니다. 그래도 **프로그램으로** 곱셈을 할 수 있습니다.\n\n' +
-            '0x80번지의 수 x와 0x81번지의 수 y를 곱해 OUT 하고 HALT 하세요. 결과는 255 이하인 경우만 테스트합니다. x나 y가 0일 수도 있습니다!',
+            '**문제**\n' +
+            '여러분의 CPU에는 곱셈 명령이 없어요. 그래도 **프로그램으로** 곱셈을 할 수 있어요.\n' +
+            '\n' +
+            '**할 일**\n' +
+            '- 0x80번지의 수 x와 0x81번지의 수 y를 곱해 OUT 하고 HALT 하세요.\n' +
+            '- 결과가 255 이하인 경우만 테스트해요.\n' +
+            '- x나 y가 **0** 일 수도 있어요!',
           hints: [
             'x × y = x를 y번 더하기. 결과를 담을 칸(예: `res: .db 0`)과, 남은 횟수를 셀 칸이 필요합니다. 0x81의 y를 그대로 세는 데 써도 됩니다.',
             '반복: 남은 횟수를 A로 가져와(LDA) 0이면 끝(JZ). 아니면 1 빼서 저장(SUB one, STA), 결과를 가져와 x를 더해 저장(LDA res, ADD 0x80, STA res), 처음으로(JMP).',
@@ -790,9 +1030,17 @@ export const chapter8: Chapter = {
         },
         en: {
           title: 'Multiplication — An Operation the Hardware Lacks',
+          why:
+            '🧮 Early 8-bit computers (the 6502 in the Apple II and NES) had no multiply instruction, so they multiplied **in software** like this.\n' +
+            '⚖ A circuit is fast but big; a program is small but slow. That trade-off is the eternal theme of computer design.',
           briefing:
-            'Your CPU has no multiply instruction. You can still multiply — **in software**.\n\n' +
-            'Multiply x at 0x80 by y at 0x81, OUT the result and HALT. Only results up to 255 are tested. x or y may be 0!',
+            '**The problem**\n' +
+            'Your CPU has no multiply instruction. You can still multiply — **in software**.\n' +
+            '\n' +
+            '**Your job**\n' +
+            '- Multiply x at 0x80 by y at 0x81, OUT the result and HALT.\n' +
+            '- Only results up to 255 are tested.\n' +
+            '- x or y may be **0**!',
           hints: [
             'x × y = add x, y times. You need a cell for the result (e.g. `res: .db 0`) and a counter — you can count down y at 0x81 itself.',
             'Loop: load the counter (LDA); if 0, finish (JZ). Otherwise subtract 1 and store it (SUB one, STA), load the result, add x and store it (LDA res, ADD 0x80, STA res), and go back (JMP).',
@@ -846,10 +1094,19 @@ sum:  .db 0
       text: {
         ko: {
           title: '최종 보스: 내 컴퓨터',
+          why:
+            '🏁 NAND 게이트 하나에서 시작해 만든 **모든 칩** 이 이 프로그램 하나를 위해 함께 움직여요.\n' +
+            '⌨ 키패드로 입력 → 계산 → 표시기에 출력. 계산기와 컴퓨터가 하는 일이 바로 이거예요.',
           briefing:
-            '마지막 과제입니다. **키패드**로 숫자 n을 입력받아(**IN**) **1 + 2 + … + n**을 계산해 **표시기**에 보여 주세요(**OUT**). 그리고 HALT.\n\n' +
-            '예: n = 4 → 10, n = 10 → 55. n = 0이면 0입니다. 테스트는 n = 0, 1, 4, 10, 20으로 합니다.\n\n' +
-            'NAND 게이트 하나에서 시작해 여러분이 만든 모든 칩이 이 프로그램 하나를 위해 함께 움직입니다.',
+            '**마지막 과제**\n' +
+            '**키패드** 로 숫자 n을 입력받아(**IN**) **1 + 2 + … + n** 을 계산해 **표시기** 에 보여 주세요(**OUT**). 그리고 HALT.\n' +
+            '\n' +
+            '**예**\n' +
+            '- n = 4 → 10, n = 10 → 55\n' +
+            '- n = 0이면 0\n' +
+            '- 테스트는 n = 0, 1, 4, 10, 20으로 해요.\n' +
+            '\n' +
+            'NAND 게이트 하나에서 시작해 여러분이 만든 모든 칩이 이 프로그램 하나를 위해 함께 움직여요.',
           hints: [
             '필요한 칸: 남은 n, 합계 sum, 상수 1. IN 직후 A에 n이 있으니 바로 저장(STA n)하세요.',
             '반복: n이 0이면 끝. 아니면 sum = sum + n, n = n − 1, 다시 처음으로. "A = n"인 상태에서 ADD sum 하면 n + sum이 한 번에 됩니다.',
@@ -867,9 +1124,18 @@ sum:  .db 0
         },
         en: {
           title: 'Final Boss: My Computer',
+          why:
+            '🏁 **Every chip** you built, starting from a single NAND gate, works together for this one program.\n' +
+            '⌨ Keypad in → compute → display out. That is exactly what calculators and computers do.',
           briefing:
-            'The last task. Read a number n from the **keypad** (**IN**), compute **1 + 2 + … + n**, show it on the **display** (**OUT**), then HALT.\n\n' +
-            'Examples: n = 4 → 10, n = 10 → 55, n = 0 → 0. The test uses n = 0, 1, 4, 10 and 20.\n\n' +
+            '**The last task**\n' +
+            'Read a number n from the **keypad** (**IN**), compute **1 + 2 + … + n**, show it on the **display** (**OUT**), then HALT.\n' +
+            '\n' +
+            '**Examples**\n' +
+            '- n = 4 → 10, n = 10 → 55\n' +
+            '- n = 0 → 0\n' +
+            '- The test uses n = 0, 1, 4, 10 and 20.\n' +
+            '\n' +
             'Every chip you have built, starting from a single NAND gate, works together for this one program.',
           hints: [
             'Cells you need: the remaining n, the running sum, the constant 1. Right after IN, A holds n — store it (STA n).',

@@ -2709,3 +2709,89 @@ textarea.code.small-code {
     animation: none;
   }
 }
+
+/* ---------- 숫자 다이얼 ---------- */
+.wheel-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.number-wheel {
+  width: 100%;
+  max-width: 220px;
+}
+.number-wheel .rim {
+  fill: #121820;
+  stroke: var(--border);
+  stroke-width: 2;
+}
+.number-wheel .neg-arc {
+  fill: none;
+  stroke: rgba(255, 122, 182, 0.45);
+  stroke-width: 4;
+}
+.number-wheel .tick {
+  stroke: #4b5563;
+  stroke-width: 1.5;
+}
+.number-wheel text {
+  text-anchor: middle;
+  font: 10px 'SF Mono', ui-monospace, monospace;
+}
+.number-wheel text.u {
+  fill: var(--text);
+  font-size: 11px;
+  font-weight: 600;
+}
+.number-wheel text.s {
+  fill: var(--muted);
+  font-size: 9px;
+}
+.number-wheel text.s.minus,
+.wheel-val .minus {
+  fill: #ff7ab6;
+  color: #ff7ab6;
+}
+.number-wheel .needle {
+  transition: transform 0.35s cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+.number-wheel .needle line {
+  stroke: var(--c);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+.number-wheel .needle-dot {
+  fill: none;
+  stroke-width: 2.5;
+  transition:
+    cx 0.35s,
+    cy 0.35s;
+}
+.number-wheel .hub {
+  fill: var(--text);
+}
+.wheel-legend {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+}
+.wheel-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.wheel-row .swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--c);
+}
+@media (prefers-reduced-motion: reduce) {
+  .number-wheel .needle,
+  .number-wheel .needle-dot {
+    transition: none;
+  }
+}

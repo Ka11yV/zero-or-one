@@ -173,3 +173,93 @@ export function screenCard(editor: Editor, onLit?: () => void): { el: HTMLElemen
   };
   return { el, render, sync };
 }
+
+// ---------- 숫자 다이얼 (4비트 = 시계처럼 16칸) ----------
+
+/** 부호 있는 4비트로 읽기: 8~15 → −8~−1 */
+export const signed4 = (v: number) => (v & 8 ? (v & 15) - 16 : v & 15);
+
+const WHEEL_COLORS = ['#5aa9ff', '#ffb547', '#3ddc84', '#ff7ab6'];
+
+/**
+ * 4비트 값을 16칸 원 위의 바늘로 보여 주는 카드. 바깥 = 부호 없는 0~15, 안쪽 = 부호 있는 −8~7.
+ * 15 다음이 0으로 "돌아가는" 것과 1111 = 15 = −1 이 한눈에 보인다.
+ */
+export function numberWheelCard(editor: Editor, pins: () => string[]): { el: HTMLElement; render(): void; sync(): void } {
+  const el = h('section', { class: 'card device wheel-card' });
+  let needles: { name: string; g: SVGGElement; dot: SVGCircleElement; label: HTMLElement; last: number | undefined | null }[] = [];
+  const S = 200;
+  const C = S / 2;
+  const pos = (i: number, r: number) => {
+    const a = (i / 16) * Math.PI * 2 - Math.PI / 2;
+    return { x: C + r * Math.cos(a), y: C + r * Math.sin(a) };
+  };
+  const svgEl = <K extends keyof SVGElementTagNameMap>(tag: K, attrs: Record<string, string>) => {
+    const e = document.createElementNS(SVG_NS, tag);
+    for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+    return e;
+  };
+  const render = () => {
+    el.textContent = '';
+    const names = pins().filter((n) => [...editor.doc.inputs, ...editor.doc.outputs].some((p) => p.name === n && p.width === 4));
+    el.hidden = !names.length;
+    needles = [];
+    if (!names.length) return;
+    const svg = svgEl('svg', { viewBox: `0 0 ${S} ${S}`, class: 'number-wheel', role: 'img', 'aria-label': t('device.wheel') });
+    svg.append(svgEl('circle', { cx: String(C), cy: String(C), r: '92', class: 'rim' }));
+    // 음수 영역(8~15) 호
+    const neg = svgEl('path', { class: 'neg-arc', d: '' });
+    const p8 = pos(8, 92);
+    const p0 = pos(0, 92);
+    neg.setAttribute('d', `M ${p8.x} ${p8.y} A 92 92 0 0 1 ${p0.x} ${p0.y}`);
+    svg.append(neg);
+    for (let i = 0; i < 16; i++) {
+      const o = pos(i, 80);
+      const n = pos(i, 56);
+      const tick = pos(i, 92);
+      const tick2 = pos(i, 87);
+      svg.append(svgEl('line', { x1: String(tick.x), y1: String(tick.y), x2: String(tick2.x), y2: String(tick2.y), class: 'tick' }));
+      const u = svgEl('text', { x: String(o.x), y: String(o.y + 4), class: 'u' });
+      u.textContent = String(i);
+      const sg = svgEl('text', { x: String(n.x), y: String(n.y + 3.5), class: `s ${i >= 8 ? 'minus' : ''}` });
+      sg.textContent = String(signed4(i));
+      svg.append(u, sg);
+    }
+    const legend = h('div', { class: 'wheel-legend' });
+    names.forEach((name, k) => {
+      const color = WHEEL_COLORS[k % WHEEL_COLORS.length]!;
+      const g = svgEl('g', { class: 'needle', style: `--c:${color};transform-origin:${C}px ${C}px` });
+      g.append(svgEl('line', { x1: String(C), y1: String(C), x2: String(C), y2: String(C - 66 + k * 6) }));
+      const dot = svgEl('circle', { cx: String(C), cy: String(C - 92), r: String(6 + k * 2), class: 'needle-dot', style: `stroke:${color}` });
+      svg.append(g, dot);
+      const label = h('span', { class: 'wheel-val' });
+      legend.append(h('div', { class: 'wheel-row', style: `--c:${color}` }, h('span', { class: 'swatch' }), h('b', {}, name), label));
+      needles.push({ name, g, dot: dot as SVGCircleElement, label, last: null });
+    });
+    svg.append(svgEl('circle', { cx: String(C), cy: String(C), r: '4', class: 'hub' }));
+    el.append(h('h2', {}, t('device.wheel')), h('p', { class: 'muted small' }, t('device.wheelHint')), h('div', { class: 'wheel-wrap' }, svg, legend));
+    sync();
+  };
+  const sync = () => {
+    const vals = new Map(editor.ioValues().map((v) => [v.name, v.value]));
+    for (const n of needles) {
+      const v = vals.get(n.name);
+      if (v === n.last) continue;
+      n.last = v;
+      if (v === undefined) {
+        n.g.style.opacity = '0.2';
+        n.label.textContent = '?';
+        continue;
+      }
+      n.g.style.opacity = '1';
+      const deg = ((v & 15) / 16) * 360;
+      n.g.style.transform = `rotate(${deg}deg)`;
+      const p = pos(v & 15, 92);
+      n.dot.setAttribute('cx', String(p.x));
+      n.dot.setAttribute('cy', String(p.y));
+      const bits = (v & 15).toString(2).padStart(4, '0');
+      n.label.replaceChildren(h('code', { class: 'inline' }, bits), ` = ${v & 15}`, v & 8 ? h('span', { class: 'minus' }, ` (${signed4(v)})`) : '');
+    }
+  };
+  return { el, render, sync };
+}

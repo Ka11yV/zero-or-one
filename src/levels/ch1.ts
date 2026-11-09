@@ -23,9 +23,21 @@ export const chapter1: Chapter = {
       text: {
         ko: {
           title: 'NOT — 뒤집기',
+          why:
+            '🌙 어두워지면 켜지는 가로등은 "밝다"의 **반대** 로 불을 켜요.\n' +
+            '🔁 프로그램의 `!` 나 "아니면(else)" 처럼, 뒤집는 일은 컴퓨터에서 아주 흔해요.',
           briefing:
-            '**NOT** 게이트는 입력을 뒤집습니다. 0이면 1, 1이면 0.\n\n' +
-            '가진 부품은 NAND뿐입니다. NAND로 NOT을 만들어 보세요. 완성하면 **NOT 칩** 을 얻습니다.',
+            '**NOT** 게이트는 입력을 뒤집어요: `0 → 1`, `1 → 0`.\n' +
+            '\n' +
+            '**곤란한 상황**\n' +
+            '가진 부품은 **NAND뿐** 이에요.\n' +
+            '\n' +
+            '**할 일**\n' +
+            'NAND로 NOT을 만들어 보세요. 완성하면 **NOT 칩** 을 얻어요.',
+          coach: {
+            passthrough: '입력이 그대로 나오고 있어요. 신호가 **NAND를 거쳐서** 나가도록 연결해 보세요.',
+            constant: 'out이 늘 같은 값이에요. NAND의 **두 입력 핀이 모두** 연결됐나요? 비어 있는 핀은 0으로 읽혀요.',
+          },
           hints: [
             'NAND의 두 입력에 **같은 값** 을 넣으면 출력은 어떻게 될까요? 진리표의 0·0 줄과 1·1 줄을 보세요.',
             '입력 in을 NAND의 두 입력 모두에 연결해 보세요 (출력 하나는 여러 곳에 연결할 수 있습니다).',
@@ -42,9 +54,21 @@ export const chapter1: Chapter = {
         },
         en: {
           title: 'NOT — Flip It',
+          why:
+            '🌙 A streetlight that turns on at dusk lights up on the **opposite** of "it is bright".\n' +
+            '🔁 Like `!` or "else" in a program, flipping things is everywhere in computing.',
           briefing:
-            'A **NOT** gate inverts its input: 0 becomes 1, 1 becomes 0.\n\n' +
-            'All you have is NAND. Build NOT from NAND. When you finish, you earn the **NOT chip**.',
+            'A **NOT** gate inverts its input: `0 → 1`, `1 → 0`.\n' +
+            '\n' +
+            '**The problem**\n' +
+            'All you have is **NAND**.\n' +
+            '\n' +
+            '**Your job**\n' +
+            'Build NOT from NAND. When you finish, you earn the **NOT chip**.',
+          coach: {
+            passthrough: 'The input comes straight out. Route the signal **through the NAND**.',
+            constant: 'out never changes. Are **both** NAND input pins connected? An empty pin reads as 0.',
+          },
           hints: [
             'What does NAND output when both inputs get the **same value**? Look at the 0·0 and 1·1 rows.',
             'Connect input in to both NAND inputs (one output can feed several places).',
@@ -77,9 +101,17 @@ export const chapter1: Chapter = {
       text: {
         ko: {
           title: 'AND — 둘 다',
+          why:
+            '🔐 금고: 열쇠 **그리고** 비밀번호가 둘 다 맞아야 열려요.\n' +
+            '🖨 프린터: 종이가 있고 **그리고** 잉크가 있어야 인쇄해요.',
           briefing:
-            '**AND** 는 두 입력이 **모두 1일 때만 1** 입니다. "a 그리고 b".\n\n' +
-            '방금 만든 NOT 칩을 이제 부품 목록에서 쓸 수 있습니다.',
+            '**AND** 는 두 입력이 **모두 1일 때만 1** 이에요. "a 그리고 b".\n' +
+            '\n' +
+            '**할 일**\n' +
+            'AND를 만드세요. 방금 만든 **NOT 칩** 을 이제 부품 목록에서 쓸 수 있어요.',
+          coach: {
+            inverted: 'out이 정답과 **정반대** 예요. 지금은 NAND 그대로네요 — NAND는 "AND의 반대"니까, 한 번 더 **뒤집으면** AND가 돼요.',
+          },
           hints: [
             'AND와 NAND의 진리표를 나란히 놓고 비교해 보세요. 무슨 관계인가요?',
             'NAND는 AND를 뒤집은 것입니다. 그렇다면 NAND를 한 번 더 뒤집으면?',
@@ -96,8 +128,17 @@ export const chapter1: Chapter = {
         },
         en: {
           title: 'AND — Both',
+          why:
+            '🔐 A safe opens only with the key **and** the code.\n' +
+            '🖨 A printer prints only with paper **and** ink.',
           briefing:
-            '**AND** is 1 **only when both inputs are 1**: "a and b".\n\n' + 'The NOT chip you just built is now available in the parts list.',
+            '**AND** is 1 **only when both inputs are 1**: "a and b".\n' +
+            '\n' +
+            '**Your job**\n' +
+            'Build AND. The **NOT chip** you just made is now in the parts list.',
+          coach: {
+            inverted: 'out is the exact **opposite**. That is plain NAND — NAND means "not AND", so **flip it once more** to get AND.',
+          },
           hints: [
             'Put the AND and NAND truth tables side by side. How are they related?',
             'NAND is AND flipped. So what happens if you flip NAND once more?',
@@ -131,9 +172,20 @@ export const chapter1: Chapter = {
       text: {
         ko: {
           title: 'OR — 하나라도',
+          why:
+            '🚪 자동문: 안쪽 센서 **또는** 바깥쪽 센서가 사람을 보면 열려요.\n' +
+            '🔔 버스 하차 벨: 어느 버튼을 눌러도 같은 벨이 울려요.',
           briefing:
-            '**OR** 는 입력 중 **하나라도 1이면 1** 입니다. 둘 다 0일 때만 0.\n\n' +
-            '이번에는 조금 생각이 필요합니다. 진리표를 잘 보세요.',
+            '**OR** 는 입력 중 **하나라도 1이면 1** 이에요. 둘 다 0일 때만 0.\n' +
+            '\n' +
+            '**질문**\n' +
+            'NAND는 "둘 다 1일 때만 0"이고, OR는 "둘 다 0일 때만 0"이에요. 무엇을 뒤집으면 둘이 같아질까요?\n' +
+            '\n' +
+            '**할 일**\n' +
+            'OR를 만드세요. 이번엔 조금 생각이 필요해요 — 진리표를 잘 보세요.',
+          coach: {
+            inverted: 'out이 정반대예요 — 지금은 **NOR**(OR의 반대)가 됐어요. 마지막에 하나를 더 뒤집거나, 뒤집는 위치를 바꿔 보세요.',
+          },
           hints: [
             'OR가 0이 되는 경우는 딱 하나, a=0 **그리고** b=0 입니다. "둘 다 0이다"를 AND로 표현할 수 있을까요?',
             '"a가 0이다"는 NOT a가 1이라는 뜻입니다. (¬a ∧ ¬b)는 "둘 다 0"이고, OR는 그 반대입니다.',
@@ -151,8 +203,20 @@ export const chapter1: Chapter = {
         },
         en: {
           title: 'OR — Either',
+          why:
+            '🚪 An automatic door opens when the inside sensor **or** the outside sensor sees someone.\n' +
+            '🔔 On a bus, any stop button rings the same bell.',
           briefing:
-            '**OR** is 1 if **at least one input is 1**. It is 0 only when both are 0.\n\n' + 'This one takes some thought. Study the truth table.',
+            '**OR** is 1 if **at least one input is 1**. It is 0 only when both are 0.\n' +
+            '\n' +
+            '**The question**\n' +
+            'NAND is "0 only when both are 1"; OR is "0 only when both are 0". What could you flip to make them match?\n' +
+            '\n' +
+            '**Your job**\n' +
+            'Build OR. This one takes some thought — study the truth table.',
+          coach: {
+            inverted: 'out is the exact opposite — you built **NOR** (inverted OR). Flip once more at the end, or move where you flip.',
+          },
           hints: [
             'OR is 0 in exactly one case: a=0 **and** b=0. Can you express "both are 0" with AND?',
             '"a is 0" means NOT a is 1. (¬a ∧ ¬b) means "both 0", and OR is the opposite of that.',
@@ -188,7 +252,13 @@ export const chapter1: Chapter = {
       text: {
         ko: {
           title: 'NOR — 둘 다 아님',
-          briefing: '**NOR** 는 OR를 뒤집은 것입니다. **둘 다 0일 때만 1**.',
+          why:
+            '🚀 아폴로 우주선을 달까지 안내한 컴퓨터는 거의 **NOR 게이트만으로** 만들어졌어요. NOR도 NAND처럼 무엇이든 만들 수 있는 만능 게이트거든요.',
+          briefing:
+            '**NOR** 는 OR를 뒤집은 것이에요. **둘 다 0일 때만 1**.',
+          coach: {
+            inverted: 'out이 정반대예요 — 지금은 **OR** 그대로예요. 결과를 한 번 **뒤집어** 보세요.',
+          },
           hints: ['NAND가 AND의 반대였듯, NOR는 무엇의 반대일까요?', 'OR 칩과 NOT 칩을 이어 보세요.', 'a, b → OR → NOT → out.'],
           principle: {
             title: 'NOR — 또 하나의 만능 게이트',
@@ -201,7 +271,13 @@ export const chapter1: Chapter = {
         },
         en: {
           title: 'NOR — Neither',
-          briefing: '**NOR** is OR inverted: **1 only when both are 0**.',
+          why:
+            '🚀 The computer that guided Apollo to the Moon was built almost entirely from **NOR gates**. Like NAND, NOR is universal — it can build anything.',
+          briefing:
+            '**NOR** is OR inverted: **1 only when both are 0**.',
+          coach: {
+            inverted: 'out is the exact opposite — that is plain **OR**. **Flip** the result once.',
+          },
           hints: ['Just as NAND is the opposite of AND, what is NOR the opposite of?', 'Chain your OR chip and NOT chip.', 'a, b → OR → NOT → out.'],
           principle: {
             title: 'NOR — another universal gate',
@@ -231,9 +307,20 @@ export const chapter1: Chapter = {
       text: {
         ko: {
           title: 'XOR — 서로 다를 때',
+          why:
+            '💡 계단 스위치: 아래층·위층 어느 쪽 스위치를 눌러도 불이 바뀌어요. 바로 XOR 동작이에요.\n' +
+            '➕ 2진수 덧셈 `1 + 1 = 10` 에서 일의 자리(0)가 XOR예요. 3장에서 **가산기** 가 돼요.',
           briefing:
-            '**XOR**(배타적 OR)는 두 입력이 **서로 다를 때만 1** 입니다.\n\n' +
+            '**XOR**(배타적 OR)는 두 입력이 **서로 다를 때만 1** 이에요.\n' +
+            '\n' +
+            '**아이디어**\n' +
+            '"서로 다르다" = "**하나라도 1** 이면서 **둘 다 1은 아니다**".\n' +
+            '\n' +
+            '**할 일**\n' +
             '지금까지 만든 칩을 자유롭게 쓰세요. 더 도전하고 싶다면 **NAND 4개** 로 만들어 ★★★ 을 노려 보세요.',
+          coach: {
+            inverted: 'out이 정반대예요 — 지금은 **XNOR**(같을 때 1)가 됐어요. 마지막 부분을 뒤집어 보세요.',
+          },
           hints: [
             'XOR는 "하나라도 1" 이면서 "둘 다 1은 아님" 입니다. 이 두 조건을 각각 어떤 칩으로 만들 수 있을까요?',
             '"하나라도 1" = OR, "둘 다 1은 아님" = NAND. 두 조건이 동시에 참이어야 하니…',
@@ -251,9 +338,20 @@ export const chapter1: Chapter = {
         },
         en: {
           title: 'XOR — When They Differ',
+          why:
+            '💡 Stairway light switches: flipping either the upstairs or downstairs switch toggles the light. That is XOR.\n' +
+            '➕ In binary `1 + 1 = 10`, the ones digit (0) is XOR. In Chapter 3 it becomes an **adder**.',
           briefing:
-            '**XOR** (exclusive OR) is 1 **only when the inputs differ**.\n\n' +
+            '**XOR** (exclusive OR) is 1 **only when the inputs differ**.\n' +
+            '\n' +
+            '**The idea**\n' +
+            '"Different" = "**at least one is 1**" and "**not both are 1**".\n' +
+            '\n' +
+            '**Your job**\n' +
             'Use any chip you have built. For a challenge, aim for ★★★ with **4 NANDs**.',
+          coach: {
+            inverted: 'out is the exact opposite — you built **XNOR** (1 when equal). Flip the last step.',
+          },
           hints: [
             'XOR is "at least one is 1" and "not both are 1". Which chips express each condition?',
             '"At least one" = OR, "not both" = NAND. Both conditions must hold at once, so…',
@@ -292,7 +390,14 @@ export const chapter1: Chapter = {
       text: {
         ko: {
           title: 'XNOR — 같은가?',
-          briefing: '**XNOR** 는 두 입력이 **같을 때 1** 입니다. 두 신호가 일치하는지 검사하는 부품이죠.',
+          why:
+            '🔑 두 값이 **같은지** 비트 하나씩 비교할 때 쓰는 기본 부품이에요.\n' +
+            '🔍 "비밀번호가 맞나?", "같으면 점프" 같은 판단의 바탕이 돼요.',
+          briefing:
+            '**XNOR** 는 두 입력이 **같을 때 1** 이에요. 두 신호가 일치하는지 검사하는 부품이죠.',
+          coach: {
+            inverted: 'out이 정반대예요 — 지금은 **XOR**(다를 때 1) 그대로예요. 한 번 뒤집으면 돼요.',
+          },
           hints: ['XOR는 "다른가?" 였습니다. "같은가?" 는?', 'XOR의 결과를 뒤집으면 됩니다.', 'a, b → XOR → NOT → out.'],
           principle: {
             title: '같음 비교기',
@@ -305,7 +410,14 @@ export const chapter1: Chapter = {
         },
         en: {
           title: 'XNOR — Are They Equal?',
-          briefing: '**XNOR** is 1 **when the inputs are equal**. It checks whether two signals match.',
+          why:
+            '🔑 The basic part for checking whether two values are **equal**, bit by bit.\n' +
+            '🔍 It underlies decisions like "is the password right?" and "jump if equal".',
+          briefing:
+            '**XNOR** is 1 **when the inputs are equal**. It checks whether two signals match.',
+          coach: {
+            inverted: 'out is the exact opposite — that is plain **XOR** (1 when different). Flip it once.',
+          },
           hints: ['XOR asked "are they different?". What about "are they the same?"', 'Invert the XOR result.', 'a, b → XOR → NOT → out.'],
           principle: {
             title: 'The equality checker',
@@ -334,9 +446,18 @@ export const chapter1: Chapter = {
       text: {
         ko: {
           title: '보스: 다수결 투표기',
+          why:
+            '🛰 우주선·비행기처럼 고장이 치명적인 곳은 같은 계산을 컴퓨터 **3대** 가 하고, **2대 이상이 같은 답** 을 믿어요 (삼중 모듈 중복). 한 대가 고장 나도 안전하죠.\n' +
+            '➕ 이 다수결 식은 3장 **전가산기의 올림(carry)** 과 똑같아요!',
           briefing:
-            '세 명의 심사위원 a, b, c가 투표합니다. **2명 이상이 찬성(1)** 하면 out이 1이 되는 회로를 만드세요.\n\n' +
-            '입력이 3개라 진리표는 8줄입니다. 진리표 → 논리식 → 회로, 이것이 논리 설계의 기본 순서입니다.',
+            '**곤란한 상황**\n' +
+            '세 명의 심사위원 a, b, c가 투표해요. 한 명이 실수해도 결과가 흔들리지 않게 하고 싶어요.\n' +
+            '\n' +
+            '**할 일**\n' +
+            '**2명 이상이 찬성(1)** 하면 out이 1이 되는 회로를 만드세요.\n' +
+            '\n' +
+            '**요령**\n' +
+            '입력이 3개라 진리표는 8줄이에요. `진리표 → 논리식 → 회로`, 이것이 논리 설계의 기본 순서예요.',
           hints: [
             '진리표에서 out이 1인 줄을 모두 찾아보세요. 어떤 공통점이 있나요?',
             '"2명 이상 찬성" = (a와 b가 찬성) 또는 (b와 c가 찬성) 또는 (c와 a가 찬성).',
@@ -354,9 +475,18 @@ export const chapter1: Chapter = {
         },
         en: {
           title: 'Boss: Majority Vote',
+          why:
+            '🛰 Where failure is fatal — spacecraft, airplanes — **three** computers run the same calculation and the answer **at least two agree on** wins (triple modular redundancy). One can fail safely.\n' +
+            '➕ This majority formula is exactly the **carry of the full adder** in Chapter 3!',
           briefing:
-            'Three judges a, b, c vote. Build a circuit whose out is 1 when **two or more vote yes (1)**.\n\n' +
-            'Three inputs means 8 rows. Truth table → formula → circuit is the basic recipe of logic design.',
+            '**The problem**\n' +
+            'Three judges a, b, c vote. One judge\'s mistake should not change the result.\n' +
+            '\n' +
+            '**Your job**\n' +
+            'Build a circuit whose out is 1 when **two or more vote yes (1)**.\n' +
+            '\n' +
+            '**The recipe**\n' +
+            'Three inputs means 8 rows. `truth table → formula → circuit` is the basic recipe of logic design.',
           hints: [
             'Find every row where out is 1. What do they have in common?',
             '"Two or more yes" = (a and b) or (b and c) or (c and a).',

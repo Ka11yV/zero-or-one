@@ -108,11 +108,33 @@ export const chapter7: Chapter = {
       text: {
         ko: {
           title: 'ALU — 연산을 고르는 칩',
+          why:
+            '🧮 계산기의 + − 버튼, 📊 엑셀 수식, 🎮 게임 점수 계산 — 결국 모두 **ALU** 가 해요.\n' +
+            'CPU는 매 순간 신호(op)로 ALU에게 "이번엔 이 계산!"이라고 알려 줘요.',
           briefing:
-            '지금까지는 덧셈기, AND, OR가 **따로** 있었습니다. 계산기나 CPU는 "지금 무슨 연산을 할지"를 **신호로 골라야** 합니다.\n\n' +
-            '**op** 값에 따라 a와 b로 다른 계산을 해서 out으로 내보내세요.\n\n' +
-            '- op = 0 → **a + b**\n- op = 1 → **a − b**\n- op = 2 → **a AND b** (비트마다)\n- op = 3 → **a OR b** (비트마다)\n\n' +
-            '이런 칩을 **ALU(산술 논리 장치)**라고 부릅니다. CPU의 계산 담당입니다.',
+            '**곤란한 상황**\n' +
+            '덧셈기, AND, OR가 지금은 **따로** 있어요. 계산기나 CPU는 "지금 무슨 연산을 할지"를 **신호로 골라야** 해요.\n' +
+            '\n' +
+            '**할 일**\n' +
+            '**op** 값에 따라 a와 b로 다른 계산을 해서 out으로 내보내세요.\n' +
+            '- op = 0 → `a + b`\n' +
+            '- op = 1 → `a − b`\n' +
+            '- op = 2 → `a AND b` (비트마다)\n' +
+            '- op = 3 → `a OR b` (비트마다)\n' +
+            '\n' +
+            '이런 칩을 **ALU(산술 논리 장치)** 라고 불러요. CPU의 계산 담당이에요.',
+          coach: {
+            'condition:op=1':
+              '**뺄셈(op = 1)일 때만** 틀려요. 덧셈기를 뺄셈 모드로 바꾸는 신호가 op에 맞춰 켜지나요?',
+            'condition:op=0':
+              '**덧셈(op = 0)일 때만** 틀려요. op = 0일 때 덧셈기가 뺄셈 모드로 돌고 있지 않나요?',
+            'condition:op.1=1':
+              '**AND·OR(op = 2, 3)** 쪽만 틀려요. 결과를 고르는 MUX의 입력 순서를 확인해 보세요: op = 2가 AND, 3이 OR예요.',
+            'condition:op.1=0':
+              '**덧셈·뺄셈(op = 0, 1)** 쪽만 틀려요. 결과를 고르는 MUX의 입력 순서와, 덧셈기 결과가 제대로 들어가는지 확인해 보세요.',
+            'condition:op.0=1':
+              'op의 0번 비트가 1인 연산(**1: 뺄셈, 3: OR**)만 틀려요. MUX가 op 비트를 순서대로 쓰고 있는지 확인해 보세요.',
+          },
           hints: [
             '"op를 보고 계산 방법을 바꾸는" 회로를 만들기는 어렵습니다. 반대로 생각해 보세요. **네 가지를 모두 계산해 두고** 하나만 고르면?',
             '넷 중 하나를 고르는 8비트 부품이 있습니다: **MUX4_8**. sel에 op를 연결하세요.',
@@ -130,11 +152,33 @@ export const chapter7: Chapter = {
         },
         en: {
           title: 'ALU — The Chip That Picks an Operation',
+          why:
+            '🧮 A calculator’s + − keys, 📊 spreadsheet formulas, 🎮 game scores — in the end the **ALU** does it all.\n' +
+            'Every moment, the CPU tells the ALU "do this one now!" with a signal (op).',
           briefing:
-            'So far the adder, AND and OR have been **separate** parts. A calculator or a CPU needs to **choose an operation with a signal**.\n\n' +
-            'Depending on **op**, compute something different from a and b and send it to out.\n\n' +
-            '- op = 0 → **a + b**\n- op = 1 → **a − b**\n- op = 2 → **a AND b** (bitwise)\n- op = 3 → **a OR b** (bitwise)\n\n' +
-            'Such a chip is called an **ALU (Arithmetic Logic Unit)** — the part of a CPU that does the math.',
+            '**The problem**\n' +
+            'The adder, AND and OR are **separate** parts right now. A calculator or a CPU must **choose the operation with a signal**.\n' +
+            '\n' +
+            '**Your job**\n' +
+            'Depending on **op**, compute something different from a and b and send it to out.\n' +
+            '- op = 0 → `a + b`\n' +
+            '- op = 1 → `a − b`\n' +
+            '- op = 2 → `a AND b` (bitwise)\n' +
+            '- op = 3 → `a OR b` (bitwise)\n' +
+            '\n' +
+            'Such a chip is an **ALU (Arithmetic Logic Unit)** — the part of a CPU that does the math.',
+          coach: {
+            'condition:op=1':
+              'Wrong **only for subtraction (op = 1)**. Does the signal that puts the adder into subtract mode follow op?',
+            'condition:op=0':
+              'Wrong **only for addition (op = 0)**. Is the adder still in subtract mode when op = 0?',
+            'condition:op.1=1':
+              'Only the **AND / OR (op = 2, 3)** side is wrong. Check the order of the result MUX inputs: op = 2 is AND, 3 is OR.',
+            'condition:op.1=0':
+              'Only the **add / subtract (op = 0, 1)** side is wrong. Check the result MUX input order and that the adder result reaches it.',
+            'condition:op.0=1':
+              'Only operations with op bit 0 = 1 (**1: subtract, 3: OR**) are wrong. Check that the MUX uses the op bits in the right order.',
+          },
           hints: [
             'Building a circuit that "changes how it calculates" based on op is hard. Flip it around: what if you **compute all four** and just pick one?',
             'There is an 8-bit part that picks one of four: **MUX4_8**. Connect op to its sel.',
@@ -173,14 +217,35 @@ export const chapter7: Chapter = {
       text: {
         ko: {
           title: 'ALU8 — 플래그가 달린 ALU',
+          why:
+            '🔀 if문과 반복문은 계산 결과를 보고 다음 행동을 정해요. "결과가 0인가? 음수인가? 올림이 났나?" — 그 답이 **플래그** 예요.\n' +
+            '다음 장의 CPU는 이 플래그로 "0이면 점프" 같은 판단을 해요.',
           briefing:
-            'CPU가 쓸 완전한 ALU입니다. 연산이 8가지로 늘고(op 3비트), 결과에 대한 **플래그** 3개를 함께 냅니다.\n\n' +
-            '- 0 → a + b,  1 → a − b,  2 → a AND b,  3 → a OR b\n' +
-            '- 4 → a XOR b,  5 → NOT a,  6 → a 그대로,  7 → b 그대로\n\n' +
+            '**아이디어**\n' +
+            'CPU가 쓸 완전한 ALU예요. 연산을 8가지로 늘리고(op 3비트), 결과에 대한 **플래그** 3개를 함께 내보내요.\n' +
+            '\n' +
+            '**연산 (op)**\n' +
+            '- 0 → `a + b` · 1 → `a − b`\n' +
+            '- 2 → `a AND b` · 3 → `a OR b`\n' +
+            '- 4 → `a XOR b` · 5 → `NOT a`\n' +
+            '- 6 → a 그대로 · 7 → b 그대로\n' +
+            '\n' +
             '**플래그**\n' +
             '- **z** (zero): out이 0이면 1\n' +
             '- **n** (negative): out의 맨 위 비트(7번). 2의 보수로 보면 "음수인가?"\n' +
             '- **c** (carry): 덧셈(op 0)·뺄셈(op 1)일 때 ADDSUB8의 cout, 나머지 연산에서는 0',
+          coach: {
+            'inverted@z':
+              'z가 정반대예요. z는 **out이 0일 때 1** 이에요. "비트 중 하나라도 1"을 구했다면 그 반대가 z예요.',
+            'constant@z':
+              'z가 늘 같은 값이에요. out의 **8비트를 모두** 보고 "전부 0인가?"를 계산해야 해요.',
+            'constant@c':
+              'c가 늘 같은 값이에요. **덧셈·뺄셈일 때는** ADDSUB8의 cout을, 다른 연산이면 0을 내보내야 해요.',
+            'condition:op.2=1':
+              '**op 4~7** (XOR, NOT a, a, b)만 틀려요. op의 **2번 비트** 로 위쪽 4개와 아래쪽 4개 결과를 고르는 부분을 확인해 보세요.',
+            'condition:op.2=0':
+              '**op 0~3** (덧셈·뺄셈·AND·OR)만 틀려요. 아래쪽 4개 결과가 맞게 골라지는지, op의 2번 비트로 고르는 순서가 바뀌지 않았는지 확인해 보세요.',
+          },
           hints: [
             '7-1에서 만든 **ALU**가 op 0~3을 이미 해 줍니다. 4~7을 하는 쪽을 하나 더 만들고, op의 2번 비트로 둘 중 하나를 고르면 됩니다.',
             'op 4~7: XOR8(a, b), NOT8(a), a, b를 MUX4_8에 넣고 sel = op의 아래 2비트. 두 결과는 MUX8로 고릅니다 (sel = op의 2번 비트). z는 out의 8비트를 모두 OR한 뒤 NOT, n은 out의 7번 비트.',
@@ -198,14 +263,35 @@ export const chapter7: Chapter = {
         },
         en: {
           title: 'ALU8 — An ALU with Flags',
+          why:
+            '🔀 if statements and loops decide what to do next from a result. "Is it 0? Negative? Did it carry?" — the answers are **flags**.\n' +
+            'The next chapter’s CPU uses these flags for decisions like "jump if zero".',
           briefing:
-            'The full ALU your CPU will use. It now has 8 operations (3-bit op) and also produces 3 **flags** about the result.\n\n' +
-            '- 0 → a + b,  1 → a − b,  2 → a AND b,  3 → a OR b\n' +
-            '- 4 → a XOR b,  5 → NOT a,  6 → a unchanged,  7 → b unchanged\n\n' +
+            '**The idea**\n' +
+            'The full ALU your CPU will use: 8 operations (3-bit op), plus 3 **flags** about the result.\n' +
+            '\n' +
+            '**Operations (op)**\n' +
+            '- 0 → `a + b` · 1 → `a − b`\n' +
+            '- 2 → `a AND b` · 3 → `a OR b`\n' +
+            '- 4 → `a XOR b` · 5 → `NOT a`\n' +
+            '- 6 → a unchanged · 7 → b unchanged\n' +
+            '\n' +
             '**Flags**\n' +
             '- **z** (zero): 1 when out is 0\n' +
             '- **n** (negative): the top bit of out (bit 7) — "is it negative?" in two’s complement\n' +
             '- **c** (carry): for add (op 0) and subtract (op 1) the cout of ADDSUB8; 0 for every other operation',
+          coach: {
+            'inverted@z':
+              'z is the exact opposite. z is **1 when out is 0**. If you computed "any bit is 1", z is its opposite.',
+            'constant@z':
+              'z never changes. Look at **all 8 bits** of out and compute "are they all 0?".',
+            'constant@c':
+              'c never changes. Send ADDSUB8’s cout **for add and subtract**, and 0 for every other operation.',
+            'condition:op.2=1':
+              'Only **op 4–7** (XOR, NOT a, a, b) are wrong. Check where **op bit 2** chooses between the upper and lower four results.',
+            'condition:op.2=0':
+              'Only **op 0–3** (add, subtract, AND, OR) are wrong. Check that the lower four results are chosen correctly and that op bit 2 picks them in the right order.',
+          },
           hints: [
             'Your **ALU** from 7-1 already handles op 0–3. Build another block for 4–7 and pick between them with op bit 2.',
             'op 4–7: put XOR8(a, b), NOT8(a), a and b into a MUX4_8 with sel = the low 2 bits of op. Choose between the two halves with a MUX8 (sel = op bit 2). z = NOT(OR of all 8 out bits), n = out bit 7.',
@@ -253,10 +339,30 @@ export const chapter7: Chapter = {
       text: {
         ko: {
           title: '7세그먼트 디코더',
+          why:
+            '⏰ 전자시계, 🛗 엘리베이터 층수 표시, 🍳 전자레인지 타이머 — 막대 7개로 숫자를 그리는 표시기는 어디에나 있어요.\n' +
+            '숫자 하나를 "어느 막대를 켤지"로 바꾸는 회로가 이번 레벨이에요.',
           briefing:
-            '전자시계의 숫자는 막대 7개(**세그먼트**)로 그립니다. 맨 위가 **a**, 시계 방향으로 오른쪽 위 **b**, 오른쪽 아래 **c**, 맨 아래 **d**, 왼쪽 아래 **e**, 왼쪽 위 **f**, 가운데가 **g**입니다.\n\n' +
-            '4비트 숫자 in(0~15)을 받아 켜야 할 막대를 seg로 내보내세요. **seg의 0번 비트 = a, 1번 = b, … 6번 = g**입니다. 10~15는 A, b, C, d, E, F로 표시합니다.\n\n' +
-            '오른쪽 **진리표** 탭의 목표 값(2진수)이 정답 모양입니다. 오른쪽 아래 표시기에서 지금 회로가 그리는 숫자를 볼 수 있습니다.',
+            '**막대 이름**\n' +
+            '전자시계 숫자는 막대 7개(**세그먼트**)로 그려요.\n' +
+            '- **a** 맨 위 → 시계 방향으로 **b** 오른쪽 위, **c** 오른쪽 아래, **d** 맨 아래\n' +
+            '- **e** 왼쪽 아래, **f** 왼쪽 위, **g** 가운데\n' +
+            '\n' +
+            '**할 일**\n' +
+            '4비트 숫자 in(0~15)을 받아 켜야 할 막대를 seg로 내보내세요.\n' +
+            '- seg의 **0번 비트 = a, 1번 = b, … 6번 = g** (1 = 켜기)\n' +
+            '- 10~15는 **A, b, C, d, E, F** 로 표시\n' +
+            '\n' +
+            '**도움**\n' +
+            '**진리표** 탭의 목표 값(2진수)이 정답 모양이에요. 오른쪽 아래 표시기에서 지금 회로가 그리는 숫자를 볼 수 있어요.',
+          coach: {
+            'inverted@seg':
+              '켜야 할 막대와 꺼야 할 막대가 **정반대** 예요. seg의 비트는 **1 = 켜기** 예요.',
+            'condition:in.3=1':
+              '**10~15 (A~F)** 만 틀려요. 진리표에서 in이 1010 이상인 줄의 목표 모양을 다시 보세요.',
+            'condition:in.3=0':
+              '**0~9** 만 틀리고 A~F는 맞아요. 숫자 0~9의 목표 모양을 다시 확인해 보세요.',
+          },
           hints: [
             '출력이 7개인 진리표입니다. 막대 하나씩 따로 생각하세요: "a는 어떤 숫자에서 켜지나?"',
             '**DEC4**로 in을 16개의 줄(그 숫자일 때만 1)로 바꾼 뒤, 막대마다 "켜지는 숫자의 줄들"을 OR로 모으면 됩니다. 예: b는 0,1,2,3,4,7,8,9,A,d에서 켜집니다.',
@@ -274,10 +380,30 @@ export const chapter7: Chapter = {
         },
         en: {
           title: '7-Segment Decoder',
+          why:
+            '⏰ Digital clocks, 🛗 elevator floor displays, 🍳 microwave timers — 7-bar number displays are everywhere.\n' +
+            'This level is the circuit that turns a number into "which bars to light".',
           briefing:
-            'Digital clock digits are drawn with 7 bars (**segments**): **a** on top, then clockwise **b** (upper right), **c** (lower right), **d** (bottom), **e** (lower left), **f** (upper left), and **g** in the middle.\n\n' +
-            'Take a 4-bit number in (0–15) and output which bars to light on seg: **seg bit 0 = a, bit 1 = b, … bit 6 = g**. 10–15 are shown as A, b, C, d, E, F.\n\n' +
+            '**Bar names**\n' +
+            'Digital clock digits are drawn with 7 bars (**segments**).\n' +
+            '- **a** on top → clockwise **b** upper right, **c** lower right, **d** bottom\n' +
+            '- **e** lower left, **f** upper left, **g** middle\n' +
+            '\n' +
+            '**Your job**\n' +
+            'Take a 4-bit number in (0–15) and output which bars to light on seg.\n' +
+            '- seg **bit 0 = a, bit 1 = b, … bit 6 = g** (1 = on)\n' +
+            '- 10–15 are shown as **A, b, C, d, E, F**\n' +
+            '\n' +
+            '**Help**\n' +
             'The goal values (binary) in the **truth table** tab are the target shapes. The display at the bottom right shows what your circuit draws.',
+          coach: {
+            'inverted@seg':
+              'The bars to light and to leave dark are **exactly reversed**. A seg bit of **1 = on**.',
+            'condition:in.3=1':
+              'Only **10–15 (A–F)** are wrong. Look again at the target shapes for rows with in ≥ 1010.',
+            'condition:in.3=0':
+              'Only **0–9** are wrong while A–F are right. Check the target shapes for digits 0–9.',
+          },
           hints: [
             'A truth table with 7 outputs. Think about one bar at a time: "for which digits is bar a on?"',
             'Use **DEC4** to turn in into 16 lines (1 only for that number), then for each bar OR together the lines of the digits where it is on. Example: b is on for 0,1,2,3,4,7,8,9,A,d.',
@@ -318,10 +444,26 @@ export const chapter7: Chapter = {
       text: {
         ko: {
           title: '2진수 → 10진수 (BCD)',
+          why:
+            '👀 회로 안의 숫자는 2진수지만, 사람은 10진수로 읽어요.\n' +
+            '🧮 계산기·⏰ 디지털 시계가 숫자를 보여 주려면, 먼저 **자릿수로 나누는** 회로가 필요해요.',
           briefing:
-            '회로 안의 숫자는 2진수지만, 사람에게는 **10진수 자릿수**로 보여 줘야 합니다. 37(= 00100101)을 표시하려면 "3"과 "7"이 따로 필요하죠.\n\n' +
-            '0~99 사이의 8비트 숫자 in을 받아 **tens**(십의 자리)와 **ones**(일의 자리)로 나누세요. 각각 0~9 (4비트)입니다. 100 이상은 테스트하지 않습니다.\n\n' +
-            '이렇게 10진수 자리마다 4비트씩 쓰는 방식을 **BCD**(2진화 10진수)라고 합니다.',
+            '**곤란한 상황**\n' +
+            '37을 화면에 보여 주고 싶은데, 회로 안에서는 `00100101` 이에요. 7세그먼트에는 "3"과 "7"이 **따로** 필요하죠.\n' +
+            '\n' +
+            '**할 일**\n' +
+            '0~99 사이의 8비트 숫자 in을 받아 두 자리로 나누세요.\n' +
+            '- **tens** = 십의 자리 (0~9, 4비트)\n' +
+            '- **ones** = 일의 자리 (0~9, 4비트)\n' +
+            '- 100 이상은 테스트하지 않아요\n' +
+            '\n' +
+            '이렇게 10진수 자리마다 4비트씩 쓰는 방식을 **BCD** (2진화 10진수)라고 해요.',
+          coach: {
+            'constant@tens':
+              'tens가 늘 같은 값이에요. in이 10 이상이면 십의 자리가 생겨요. **10을 몇 번 뺄 수 있는지** 세어 보는 방법을 떠올려 보세요.',
+            'constant@ones':
+              'ones가 늘 같은 값이에요. 일의 자리는 **10을 빼고 남은 값** 이에요.',
+          },
           hints: [
             '"10으로 나누기"를 회로로 만들기는 어렵습니다. 대신 유명한 방법이 있습니다: **더블 대블**(shift-and-add-3). 2진수를 한 비트씩 왼쪽으로 밀어 넣으면서, 자릿수가 5 이상이 되면 3을 더합니다.',
             '왜 3일까요? 4비트 자릿수에서 5 이상인 수를 한 칸 밀면(×2) 10 이상이 됩니다. 미리 3을 더해 두면(5+3=8) 밀었을 때 16을 넘어 **윗자리로 정확히 1이 올라가고** 나머지가 맞게 남습니다.',
@@ -339,10 +481,26 @@ export const chapter7: Chapter = {
         },
         en: {
           title: 'Binary to Decimal (BCD)',
+          why:
+            '👀 Numbers inside a circuit are binary, but people read decimal.\n' +
+            '🧮 Before a calculator or ⏰ digital clock can show a number, a circuit has to **split it into digits**.',
           briefing:
-            'Numbers inside the circuit are binary, but people need **decimal digits**. To show 37 (= 00100101) you need a "3" and a "7" separately.\n\n' +
-            'Take an 8-bit number in from 0 to 99 and split it into **tens** and **ones**, each 0–9 (4 bits). Values of 100 or more are not tested.\n\n' +
+            '**The problem**\n' +
+            'You want to show 37, but inside the circuit it is `00100101`. A 7-segment display needs a "3" and a "7" **separately**.\n' +
+            '\n' +
+            '**Your job**\n' +
+            'Take an 8-bit number in from 0 to 99 and split it into two digits.\n' +
+            '- **tens** = the tens digit (0–9, 4 bits)\n' +
+            '- **ones** = the ones digit (0–9, 4 bits)\n' +
+            '- values of 100 or more are not tested\n' +
+            '\n' +
             'Using 4 bits per decimal digit like this is called **BCD** (binary-coded decimal).',
+          coach: {
+            'constant@tens':
+              'tens never changes. Numbers of 10 or more have a tens digit. Think about counting **how many times you can subtract 10**.',
+            'constant@ones':
+              'ones never changes. The ones digit is **what is left after taking away the tens**.',
+          },
           hints: [
             'Building "divide by 10" is hard. There is a famous trick instead: **double dabble** (shift-and-add-3). Shift the binary number in one bit at a time, and whenever a digit is 5 or more, add 3 first.',
             'Why 3? Shifting a 4-bit digit of 5 or more (×2) gives 10 or more. Adding 3 first (5+3=8) makes it pass 16 when shifted, so **exactly 1 carries into the next digit** and the remainder is right.',
@@ -383,14 +541,34 @@ export const chapter7: Chapter = {
       text: {
         ko: {
           title: '보스: 계산기',
+          why:
+            '🧮 손에 드는 전자계산기도 안을 들여다보면 **키 입력 → 기억 → ALU 계산 → 숫자 표시** 의 흐름이에요.\n' +
+            '이번 보스는 그 흐름을 처음부터 끝까지, 직접 만든 부품으로 완성하는 거예요.',
           briefing:
-            '지금까지 만든 부품으로 **진짜 계산기**를 만듭니다. 오른쪽 **키패드**를 누르면 key에 키 값이 들어가고 clk이 한 번 뜁니다. 결과는 **7세그먼트 두 자리**(tens, ones)에 나옵니다.\n\n' +
-            '키 값: 숫자 **0~9**, + → **10**, − → **11**, = → **12**\n\n' +
-            '동작 (한 자리 수끼리 계산):\n' +
-            '- **숫자**를 누르면: 그 숫자를 "지금 입력"으로 기억하고 화면에 보여 줍니다.\n' +
-            '- **+ 또는 −**를 누르면: 지금 입력을 "앞의 수"로 옮겨 두고, 어떤 연산인지 기억합니다. 화면은 그대로.\n' +
-            '- **=**를 누르면: 앞의 수 (+ 또는 −) 지금 입력을 계산해 화면에 보여 줍니다.\n\n' +
-            '예: 7 + 5 = → **12**.  뺄셈은 결과가 0 이상인 경우만 테스트합니다. 화면은 0~18이므로 십의 자리가 0이어도 "0"을 표시합니다.',
+            '**할 일**\n' +
+            '지금까지 만든 부품으로 **진짜 계산기** 를 만들어요.\n' +
+            '- 오른쪽 **키패드** 를 누르면 key에 키 값이 들어가고 clk이 한 번 뛰어요\n' +
+            '- 결과는 **7세그먼트 두 자리** (tens, ones)에 나와요\n' +
+            '\n' +
+            '**키 값**\n' +
+            '- 숫자 **0~9** → 0~9\n' +
+            '- **+** → 10 · **−** → 11 · **=** → 12\n' +
+            '\n' +
+            '**동작** (한 자리 수끼리 계산)\n' +
+            '- **숫자**: 그 숫자를 "지금 입력"으로 기억하고 화면에 보여 줘요\n' +
+            '- **+ 또는 −**: 지금 입력을 "앞의 수"로 옮겨 두고, 어떤 연산인지 기억해요. 화면은 그대로\n' +
+            '- **=**: 앞의 수 (+ 또는 −) 지금 입력을 계산해 화면에 보여 줘요\n' +
+            '\n' +
+            '**예시와 조건**\n' +
+            '- `7 + 5 =` → **12**\n' +
+            '- 뺄셈은 결과가 0 이상인 경우만 테스트해요\n' +
+            '- 결과는 0~18이라, 십의 자리가 0이어도 "0"을 표시해요',
+          coach: {
+            'constant@ones':
+              '화면(ones)이 바뀌지 않아요. 숫자 키를 누르면 그 숫자를 **레지스터에 저장** 하고, 저장한 값을 **BCD8 → SEG7** 으로 보여 줘야 해요.',
+            'constant@tens':
+              '십의 자리가 늘 같은 모양이에요. 결과를 **BCD8로 두 자리로 나눈 뒤** tens도 SEG7로 그려야 해요. 십의 자리가 0이어도 "0"을 표시해요.',
+          },
           hints: [
             '기억해야 할 것을 적어 보세요: 지금 입력(숫자), 앞의 수, 연산 종류(+/−), 화면에 보이는 값. 각각 레지스터 하나입니다(REG8, REG1). 모든 레지스터의 clk은 같은 clk에.',
             '키 종류 알아내기: CMP4로 key < 10이면 "숫자 키". DEC4(key)의 10, 11, 12번 줄이 +, −, =. 이 신호들이 각 레지스터의 **load**가 됩니다. 예: 앞의 수 레지스터의 load = (+ 또는 −).',
@@ -408,14 +586,34 @@ export const chapter7: Chapter = {
         },
         en: {
           title: 'Boss: Calculator',
+          why:
+            '🧮 Open up a pocket calculator and you find this flow: **key press → remember → ALU → show the number**.\n' +
+            'This boss builds that flow end to end, from parts you made yourself.',
           briefing:
-            'Build a **real calculator** from everything you have made. Pressing the **keypad** on the right puts the key value on key and pulses clk once. The result appears on **two 7-segment digits** (tens, ones).\n\n' +
-            'Key values: digits **0–9**, + → **10**, − → **11**, = → **12**\n\n' +
-            'Behaviour (single-digit numbers):\n' +
-            '- **A digit**: remember it as the "current entry" and show it.\n' +
-            '- **+ or −**: move the current entry into "the first number" and remember which operation. The display does not change.\n' +
-            '- **=**: compute first number (+ or −) current entry and show it.\n\n' +
-            'Example: 7 + 5 = → **12**. Subtraction is only tested when the result is 0 or more. Results are 0–18, so show "0" in the tens digit too.',
+            '**Your job**\n' +
+            'Build a **real calculator** from everything you have made.\n' +
+            '- Pressing the **keypad** on the right puts the key value on key and pulses clk once\n' +
+            '- The result appears on **two 7-segment digits** (tens, ones)\n' +
+            '\n' +
+            '**Key values**\n' +
+            '- digits **0–9** → 0–9\n' +
+            '- **+** → 10 · **−** → 11 · **=** → 12\n' +
+            '\n' +
+            '**Behaviour** (single-digit numbers)\n' +
+            '- **A digit**: remember it as the "current entry" and show it\n' +
+            '- **+ or −**: move the current entry into "the first number" and remember which operation. The display does not change\n' +
+            '- **=**: compute first number (+ or −) current entry and show it\n' +
+            '\n' +
+            '**Example and rules**\n' +
+            '- `7 + 5 =` → **12**\n' +
+            '- subtraction is only tested when the result is 0 or more\n' +
+            '- results are 0–18, so show "0" in the tens digit too',
+          coach: {
+            'constant@ones':
+              'The display (ones) never changes. A digit key must be **stored in a register**, and the stored value shown through **BCD8 → SEG7**.',
+            'constant@tens':
+              'The tens digit never changes shape. **Split the result into two digits with BCD8**, then draw tens with SEG7 too. Show "0" even when tens is 0.',
+          },
           hints: [
             'List what must be remembered: the current entry, the first number, the operation (+/−) and the displayed value. Each is a register (REG8, REG1), all clocked by clk.',
             'Classify the key: CMP4 gives key < 10 → "digit key". Lines 10, 11, 12 of DEC4(key) are +, −, =. These signals drive each register’s **load**. For example, the first-number register loads on (+ or −).',

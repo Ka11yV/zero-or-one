@@ -19,10 +19,15 @@ export const chapter0: Chapter = {
       text: {
         ko: {
           title: '불 켜기',
+          why:
+            '💡 컴퓨터 안의 모든 것 — 사진, 음악, 이 게임까지 — 은 결국 **켜짐(1)과 꺼짐(0)** 이에요.\n' +
+            '지금 잇는 선 하나가 그 첫걸음이에요.',
           briefing:
-            '디지털 세계의 신호는 단 두 가지, **0(꺼짐)** 과 **1(켜짐)** 뿐입니다.\n\n' +
-            '왼쪽의 입력 스위치 **a** 의 오른쪽 핀에서 끌어서, 오른쪽 램프 **out** 의 왼쪽 핀에 놓아 선을 연결하세요. ' +
-            '그다음 스위치를 클릭해 0과 1을 바꿔 보고, **테스트** 를 누르세요.',
+            '디지털 세계의 신호는 단 두 가지, **0(꺼짐)** 과 **1(켜짐)** 뿐이에요.\n' +
+            '\n' +
+            '**할 일**\n' +
+            '- 입력 스위치 **a** 의 오른쪽 핀에서 끌어서, 램프 **out** 의 왼쪽 핀에 놓아 선을 이어요.\n' +
+            '- 스위치를 클릭해 0과 1을 바꿔 보고, **테스트** 를 누르세요.',
           hints: [
             '핀은 부품 가장자리의 작은 점입니다. 점 위에서 마우스를 누른 채로 끌어 보세요.',
             '스위치의 오른쪽 점(출력) → 램프의 왼쪽 점(입력)으로 끌면 됩니다.',
@@ -38,10 +43,15 @@ export const chapter0: Chapter = {
         },
         en: {
           title: 'Let There Be Light',
+          why:
+            '💡 Everything inside a computer — photos, music, even this game — comes down to **on (1) and off (0)**.\n' +
+            'The wire you draw now is the very first step.',
           briefing:
-            'Digital signals come in only two kinds: **0 (off)** and **1 (on)**.\n\n' +
-            "Drag from the right pin of input switch **a** and drop it on the left pin of lamp **out**. " +
-            'Then click the switch to flip between 0 and 1, and press **Test**.',
+            'Digital signals come in only two kinds: **0 (off)** and **1 (on)**.\n' +
+            '\n' +
+            '**Your job**\n' +
+            '- Drag from the right pin of input switch **a** and drop it on the left pin of lamp **out**.\n' +
+            '- Click the switch to flip between 0 and 1, then press **Test**.',
           hints: [
             'Pins are the small dots on the edges of parts. Press on a dot and drag.',
             "Drag from the switch's right dot (output) to the lamp's left dot (input).",
@@ -70,8 +80,13 @@ export const chapter0: Chapter = {
       text: {
         ko: {
           title: '나눠 주기',
+          why:
+            '🔔 초인종 버튼 하나로 집 안 여러 곳에서 벨이 울리듯, 신호 하나를 여러 곳에 나눠 줘야 할 때가 많아요.\n' +
+            '🧠 CPU 안에서도 **클럭** 신호 하나가 수많은 부품에 동시에 전해져요.',
           briefing:
-            '하나의 신호를 여러 곳에 보내야 할 때가 많습니다.\n\n' +
+            '하나의 신호를 여러 곳에 보내야 할 때가 많아요.\n' +
+            '\n' +
+            '**할 일**\n' +
             '스위치 **a** 하나로 램프 **out1**, **out2** 를 동시에 켜세요.',
           hints: [
             '출력 핀 하나에서 선을 여러 개 끌어낼 수 있을까요?',
@@ -88,8 +103,14 @@ export const chapter0: Chapter = {
         },
         en: {
           title: 'Sharing',
+          why:
+            '🔔 Like one doorbell button ringing chimes in several rooms, one signal often has to reach many places.\n' +
+            '🧠 Inside a CPU, a single **clock** signal reaches countless parts at once.',
           briefing:
-            'Often one signal has to go to several places.\n\n' + 'Light both lamps **out1** and **out2** with the single switch **a**.',
+            'Often one signal has to go to several places.\n' +
+            '\n' +
+            '**Your job**\n' +
+            'Light both lamps **out1** and **out2** with the single switch **a**.',
           hints: [
             'Can you drag more than one wire out of a single output pin?',
             "Drag from the switch's output dot twice: once to out1, once to out2.",
@@ -118,8 +139,17 @@ export const chapter0: Chapter = {
       text: {
         ko: {
           title: '첫 부품, NAND',
+          why:
+            '🧱 NAND 하나만 있으면 **어떤 논리 회로든** 만들 수 있어요. 이 게임의 CPU까지 전부요!\n' +
+            '💾 USB 메모리·SSD에 들어가는 **NAND 플래시** 라는 이름도 이 게이트 구조에서 왔어요.',
           briefing:
-            '이제 첫 번째 **논리 게이트** 를 만납니다. **NAND** 는 두 입력이 **모두 1일 때만 0**, 그 외에는 1을 내보냅니다.\n\n' +
+            '이제 첫 번째 **논리 게이트** 를 만나요.\n' +
+            '\n' +
+            '**NAND**\n' +
+            '- 두 입력이 **모두 1일 때만 0**\n' +
+            '- 그 외에는 1\n' +
+            '\n' +
+            '**할 일**\n' +
             'NAND를 하나 놓고 a, b, out에 연결하세요. 스위치를 바꿔 가며 오른쪽 **진리표** 의 네 줄이 모두 맞는지 직접 확인해 보세요.',
           hints: [
             '부품 목록에서 NAND를 클릭하거나 캔버스로 끌어오세요.',
@@ -138,8 +168,17 @@ export const chapter0: Chapter = {
         },
         en: {
           title: 'First Part: NAND',
+          why:
+            '🧱 With NAND alone you can build **any logic circuit** — all the way up to this game\'s CPU!\n' +
+            '💾 The **NAND flash** in USB sticks and SSDs is named after this gate\'s structure.',
           briefing:
-            'Meet your first **logic gate**. **NAND** outputs **0 only when both inputs are 1**, and 1 otherwise.\n\n' +
+            'Meet your first **logic gate**.\n' +
+            '\n' +
+            '**NAND**\n' +
+            '- outputs **0 only when both inputs are 1**\n' +
+            '- otherwise 1\n' +
+            '\n' +
+            '**Your job**\n' +
             'Place a NAND and connect it to a, b, and out. Flip the switches and check every row of the **truth table** on the right.',
           hints: [
             'Click NAND in the parts list, or drag it onto the canvas.',

@@ -8,7 +8,7 @@ import { formatValue, inputsCard } from './inputsCard';
 import { helpCard, highlightCurrentRow, statsCard } from './sandboxPanel';
 import { timingChart } from './timingChart';
 import { memoryViewer } from './memoryViewer';
-import { keypadCard, seg7Card } from './devices';
+import { keypadCard, numberWheelCard, seg7Card, signed4 } from './devices';
 import { diagnose, levelCoachText, type Coaching } from '../game/coach';
 import type { PanelHooks, Toast } from './workspace';
 
@@ -44,8 +44,9 @@ export function levelPanel(panel: HTMLElement, editor: Editor, toast: Toast, opt
   const chart = sequential ? timingChart(editor) : null;
   const memory = memoryViewer(editor);
   const display = seg7Card(editor, () => level.devices?.seg7 ?? []);
+  const wheel = numberWheelCard(editor, () => level.devices?.wheel ?? []);
   const keypad = level.devices?.keypad && clockPin ? keypadCard(editor, level.devices.keypad.pin, clockPin) : null;
-  panel.append(tabs, body, ...(keypad ? [keypad.el] : []), display.el, inputs.el, h('div', { class: 'test-bar' }, summary, testBtn), memory.el, ...(chart ? [chart.el] : []), statsBox, helpBox);
+  panel.append(tabs, body, ...(keypad ? [keypad.el] : []), display.el, wheel.el, inputs.el, h('div', { class: 'test-bar' }, summary, testBtn), memory.el, ...(chart ? [chart.el] : []), statsBox, helpBox);
 
   const text = () => level.text[getLang()];
 
@@ -79,7 +80,8 @@ export function levelPanel(panel: HTMLElement, editor: Editor, toast: Toast, opt
   const renderBrief = () => {
     const tx = text();
     const pinList = (pins: Level['inputs']) => pins.map((p) => (p.width > 1 ? `${p.name}[${p.width}]` : p.name)).join(', ');
-    const chips = level.allowedChips.filter((c) => !c.startsWith('CONST'));
+    // 상수·버스는 늘 보조 부품이라 목록에서 뺀다
+    const chips = level.allowedChips.filter((c) => !c.startsWith('CONST') && !/^(SPLIT|MERGE)\d+$/.test(c));
     body.append(h('h2', { class: 'level-title' }, `${level.id} · ${tx.title}`));
     if (tx.why) body.append(h('aside', { class: 'why-card' }, h('h3', {}, t('level.why')), rich(tx.why)));
     body.append(
@@ -167,7 +169,9 @@ export function levelPanel(panel: HTMLElement, editor: Editor, toast: Toast, opt
     const outs = level.outputs.map((p) => p.name);
     const width = new Map([...level.inputs, ...level.outputs].map((p) => [p.name, p.width]));
     const bin = new Set(level.binaryPins ?? []);
-    const fmt = (name: string, v: number | undefined) => formatValue(v ?? 0, width.get(name) ?? 1, bin.has(name));
+    const signed = new Set(level.signedPins ?? []);
+    const fmt = (name: string, v: number | undefined) =>
+      formatValue(v ?? 0, width.get(name) ?? 1, bin.has(name)) + (signed.has(name) && (v ?? 0) & 8 ? ` (${signed4(v ?? 0)})` : '');
     // 줄이 많으면(가산기 등) 틀린 줄을 우선으로 일부만 보여준다
     let shown = result.rows;
     if (shown.length > MAX_ROWS) {
@@ -285,6 +289,7 @@ export function levelPanel(panel: HTMLElement, editor: Editor, toast: Toast, opt
     chart?.render();
     memory.render();
     display.render();
+    wheel.render();
     keypad?.render();
   };
 
@@ -299,11 +304,13 @@ export function levelPanel(panel: HTMLElement, editor: Editor, toast: Toast, opt
       chart?.sample();
       memory.render();
       display.sync();
+      wheel.sync();
     },
     sim: () => {
       highlightCurrentRow(editor, rowsEl);
       inputs.sync();
       display.sync();
+      wheel.sync();
       chart?.sample();
       memory.sync();
     },

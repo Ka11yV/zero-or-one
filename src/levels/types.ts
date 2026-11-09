@@ -33,6 +33,8 @@ export interface LevelDevices {
   seg7?: string[];
   /** 키패드: 누르면 이 핀에 키 값을 넣고 클럭을 한 번 */
   keypad?: { pin: string };
+  /** 숫자 다이얼: 4비트 핀을 16칸 원 위 바늘로 (부호 없는/있는 값 함께) */
+  wheel?: string[];
 }
 
 export interface CircuitLevel {
@@ -50,6 +52,8 @@ export interface CircuitLevel {
   stars?: { maxNand: number };
   /** 진리표에서 2진수로 보여줄 다비트 핀 (예: 디코더의 원-핫 출력) */
   binaryPins?: string[];
+  /** 진리표에서 부호 있는 값도 함께 보여 줄 4비트 핀: 13 (−3) */
+  signedPins?: string[];
   devices?: LevelDevices;
   text: Record<Lang, LevelText>;
   /** 참조 정답 (자동 테스트 전용, 플레이어에게 비공개) */

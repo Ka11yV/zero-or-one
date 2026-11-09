@@ -332,6 +332,8 @@ export const ko = {
   'coach.condition': '거의 다 맞았어요! 틀린 줄은 모두 **{cond}** 일 때예요. 그 경우에 회로가 어떻게 동작하는지 따라가 보세요.',
   'coach.condValue': '{pin} = {v}',
   'coach.condBit': '{pin}의 {bit}번 비트 = {v}',
+  'device.wheel': '숫자 다이얼',
+  'device.wheelHint': '4비트 수는 시계처럼 15 다음에 0으로 돌아가요. 바깥은 0~15, 안쪽은 같은 비트를 음수로 읽은 값(−8~7)이에요.',
   'palette.title': '부품',
   'palette.io': '입출력',
   'palette.gates': '게이트',
