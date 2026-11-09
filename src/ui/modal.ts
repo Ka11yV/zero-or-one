@@ -1,3 +1,4 @@
+import { showNandInfo } from './nandModal';
 import { Editor } from '../editor/editor';
 import type { EditorDoc } from '../editor/doc';
 import { getLang, t } from '../i18n';
@@ -138,6 +139,8 @@ export interface InsideContext {
 }
 
 export function showChipInside(chipId: string, ctx: InsideContext): ModalHandle {
+  // NAND는 이 게임의 기본 부품이라 내부 회로가 없다 → 트랜지스터 그림으로 설명
+  if (chipId === 'NAND') return showNandInfo();
   const { lib } = ctx;
   const src = ctx.sources[chipId];
   const canvas = h('canvas', { class: 'board inside', tabindex: '0' });

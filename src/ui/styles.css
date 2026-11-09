@@ -2931,3 +2931,165 @@ textarea.code.small-code {
     animation: none;
   }
 }
+
+/* ---------- NAND 설명 (트랜지스터) ---------- */
+.nand-lead p {
+  font-size: 14px;
+}
+.nand-body {
+  display: grid;
+  grid-template-columns: minmax(200px, 1fr) minmax(240px, 1.2fr);
+  gap: 20px;
+  align-items: start;
+  margin: 8px 0 4px;
+}
+@media (max-width: 640px) {
+  .nand-body {
+    grid-template-columns: 1fr;
+  }
+}
+.nand-inputs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.nand-in {
+  flex: 1;
+  height: 44px;
+  border-radius: 8px;
+  border: 2px solid var(--border);
+  background: var(--surface-2);
+  color: var(--muted);
+  font: 700 16px 'SF Mono', ui-monospace, monospace;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.nand-in.on {
+  border-color: var(--on);
+  color: #eafff2;
+  background: color-mix(in srgb, var(--on) 20%, var(--surface-2));
+}
+.nand-now {
+  min-height: 64px;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.nand-now p {
+  margin: 0;
+}
+.nand-table {
+  width: 100%;
+  text-align: center;
+}
+.nand-table tbody tr {
+  cursor: pointer;
+}
+.nand-table tr.current td {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  color: var(--text);
+  font-weight: 700;
+}
+.nand-table td.o {
+  color: var(--accent);
+}
+.cmos {
+  width: 100%;
+  max-width: 320px;
+  display: block;
+  margin: 0 auto;
+}
+.cmos .w {
+  fill: none;
+  stroke: #3a434f;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke 0.2s;
+}
+.cmos .w.hi {
+  stroke: var(--on);
+  filter: drop-shadow(0 0 3px rgba(61, 220, 132, 0.7));
+}
+.cmos .w.lo {
+  stroke: var(--bus);
+}
+.cmos .tr-box {
+  fill: #151a21;
+  stroke: #4b5563;
+  stroke-width: 2;
+  transition: all 0.2s;
+}
+.cmos .tr.conduct .tr-box {
+  stroke: var(--text);
+  fill: #1c2530;
+}
+.cmos .sw-closed,
+.cmos .sw-open {
+  fill: none;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke: #9aa5b4;
+}
+.cmos .sw-closed {
+  display: none;
+}
+.cmos .tr.conduct .sw-closed {
+  display: inline;
+  stroke: var(--text);
+}
+.cmos .tr.conduct .sw-open {
+  display: none;
+}
+.cmos .tr-kind {
+  fill: var(--muted);
+  font: 700 11px 'SF Mono', ui-monospace, monospace;
+}
+.cmos .tr-in {
+  fill: var(--accent);
+  font: 700 12px 'SF Mono', ui-monospace, monospace;
+}
+.cmos .rail-label,
+.cmos .out-label {
+  fill: var(--muted);
+  font: 11px inherit;
+  font-family: inherit;
+  text-anchor: middle;
+}
+.cmos .gnd-mark {
+  stroke: var(--bus);
+  stroke-width: 2.5;
+}
+.cmos .out-lamp {
+  fill: #18211c;
+  stroke: #4b5a52;
+  stroke-width: 2.5;
+  transition: all 0.2s;
+}
+.cmos .out-lamp.hi {
+  fill: var(--on);
+  stroke: #b7ffd6;
+  filter: drop-shadow(0 0 8px rgba(61, 220, 132, 0.9));
+}
+.cmos .out-val {
+  text-anchor: middle;
+  font: 700 13px 'SF Mono', ui-monospace, monospace;
+  fill: #9fb3a8;
+}
+.cmos .out-lamp.hi + .out-val {
+  fill: #05140b;
+}
+.nand-legend {
+  margin-top: 6px;
+}
+.nand-legend p {
+  font-size: 12px;
+  color: var(--muted);
+}
+.nand-foot {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}

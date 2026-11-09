@@ -588,7 +588,8 @@ export class Editor {
       const hit = hitTest(this.doc, this.lib, this.camera.toWorld(sp.x, sp.y), this.tol());
       if (hit?.kind !== 'instance') return;
       const inst = this.doc.instances.find((i) => i.uid === hit.uid);
-      if (inst && this.lib.get(inst.chip)?.kind === 'composite') this.opts.onOpenChip?.(inst.chip);
+      // 복합 칩은 내부 회로, 기본 부품 NAND는 설명 창(트랜지스터 그림)
+      if (inst && (this.lib.get(inst.chip)?.kind === 'composite' || inst.chip === 'NAND')) this.opts.onOpenChip?.(inst.chip);
     });
     this.listen(c, 'wheel', (e) => this.onWheel(e), { passive: false });
     this.listen(window, 'keydown', (e) => this.onKey(e));

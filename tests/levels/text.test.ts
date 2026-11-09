@@ -67,3 +67,12 @@ describe('세로셈', () => {
     }
   });
 });
+
+describe('NAND 트랜지스터', () => {
+  it('P는 0일 때, N은 1일 때 연결 → 둘 다 1일 때만 out = 0', async () => {
+    const { nandSwitches } = await import('../../src/ui/nandModal');
+    expect(nandSwitches(1, 1)).toEqual({ pa: false, pb: false, na: true, nb: true, out: 0 });
+    expect(nandSwitches(0, 1)).toMatchObject({ pa: true, nb: true, na: false, out: 1 });
+    expect(nandSwitches(0, 0).out).toBe(1);
+  });
+});
