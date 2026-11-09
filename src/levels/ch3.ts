@@ -213,9 +213,21 @@ export const chapter3: Chapter = {
       text: {
         ko: {
           title: '음수 만들기 (2의 보수)',
+          why:
+            '🛗 엘리베이터 **B1** 은 -1층, 겨울 기온 **-5°C**, 통장 잔액 **-3,000원**. 컴퓨터도 음수를 다뤄야 해요. 그런데 비트에는 "−" 기호가 없죠.\n' +
+            '0과 1만으로 음수를 나타내는 방법이 이번 레벨이에요. 그리고 이걸 만들면 **덧셈 회로로 뺄셈** 을 할 수 있게 돼요(다음 레벨).',
           briefing:
-            '4비트로 음수를 나타내는 약속이 있습니다: **-x 는 (모든 비트를 뒤집은 x) + 1**. 이것을 **2의 보수** 라고 합니다.\n\n' +
-            '예: 3 = 0011 → 뒤집기 1100 → +1 → **1101** = -3. in을 받아 -in(4비트)을 내보내세요. **상수 0 / 상수 1** 부품을 쓸 수 있습니다.',
+            '**곤란한 상황:** 계산기에 뺄셈 버튼을 달아야 하는데, 손에 있는 건 **덧셈 회로(ADD4)** 뿐이에요. 덧셈만으로 뺄셈을 할 수 있을까요?\n\n' +
+            '방법은 **음수를 더하는 것**: a − b = a + (−b). 그러려면 먼저 **−x를 비트로** 만들어야 해요.\n\n' +
+            '4비트 수는 시계처럼 15 다음에 0으로 돌아가요. 그래서 **x에 더했을 때 0이 되는 수** 가 곧 −x예요. 그 수를 만드는 요령이 **뒤집고 +1** (2의 보수):\n' +
+            '3 = 0011 → 뒤집기 1100 → +1 → **1101** = −3. (확인: 0011 + 1101 = 1 0000 → 넘친 1을 버리면 **0000** ✓)\n\n' +
+            'in을 받아 −in(4비트)을 내보내세요. **상수 0 / 상수 1** 부품을 쓸 수 있어요.',
+          coach: {
+            'offset-1':
+              '거의 다 왔어요! 지금은 **뒤집기만** 한 상태예요 (뒤집은 x는 −x보다 딱 1 작아요). 마지막에 **1을 더해** 보세요. ADD4의 **cin** 을 상수 1에 이으면 돼요.',
+            'offset+1': '1을 **두 번** 더한 것 같아요. ADD4의 b에 1을 넣고 cin도 1이면 +2가 돼요. **둘 중 하나만** 1로!',
+            passthrough: '입력이 그대로 나오고 있어요. 먼저 **비트를 모두 뒤집어** 보세요: 버스 분리 → NOT 4개 → 버스 합치기.',
+          },
           hints: [
             '두 단계입니다: ① 비트를 모두 뒤집는다, ② 1을 더한다.',
             '뒤집기: 버스 분리 → NOT 4개 → 버스 합치기. 1 더하기: ADD4를 쓰되, 더할 수(b)는 0으로 두고 cin을 1로!',
@@ -233,9 +245,21 @@ export const chapter3: Chapter = {
         },
         en: {
           title: 'Making Negatives (Two’s Complement)',
+          why:
+            '🛗 Basement floor **B1** is -1, winter is **-5°C**, an overdrawn account is **-$30**. Computers need negative numbers too — but bits have no "−" sign.\n' +
+            'This level is how to write negatives with only 0s and 1s. And once you have it, the **adder can subtract** (next level).',
           briefing:
-            'There is a convention for negative numbers in 4 bits: **-x is (x with every bit flipped) + 1**. This is **two’s complement**.\n\n' +
-            'Example: 3 = 0011 → flip 1100 → +1 → **1101** = -3. Take in and output -in (4 bits). **Const 0 / Const 1** parts are available.',
+            '**The problem:** the calculator needs a minus button, but all you have is an **adder (ADD4)**. Can you subtract using only addition?\n\n' +
+            'The trick is to **add a negative**: a − b = a + (−b). So first you need **−x as bits**.\n\n' +
+            '4-bit numbers wrap like a clock: after 15 comes 0. So **the number that gives 0 when added to x** is −x. The recipe for it is **flip, then +1** (two’s complement):\n' +
+            '3 = 0011 → flip 1100 → +1 → **1101** = −3. (Check: 0011 + 1101 = 1 0000 → drop the overflow 1 → **0000** ✓)\n\n' +
+            'Take in and output −in (4 bits). **Const 0 / Const 1** parts are available.',
+          coach: {
+            'offset-1':
+              'So close! Right now you have **only flipped** the bits (flipped x is exactly 1 less than −x). **Add 1** at the end — wire ADD4’s **cin** to Const 1.',
+            'offset+1': 'Looks like you add 1 **twice**. With 1 on ADD4’s b and cin = 1 you get +2. Make **only one** of them 1!',
+            passthrough: 'The input comes straight out. First **flip every bit**: split → 4 NOTs → merge.',
+          },
           hints: [
             'Two steps: ① flip every bit, ② add 1.',
             'Flip: split → 4 NOTs → merge. Add 1: use ADD4 with b set to 0 and cin set to 1!',
@@ -279,9 +303,19 @@ export const chapter3: Chapter = {
       text: {
         ko: {
           title: '4비트 감산기',
+          why:
+            '💳 잔액 계산, ⏱ 남은 시간, 🎮 HP 깎기 — 빼기는 어디에나 있어요. 그런데 실제 CPU에는 **뺄셈 전용 회로가 거의 없어요**. 이번 레벨에서 그 이유를 직접 확인해요: 가산기에 선 몇 개만 바꾸면 끝!',
           briefing:
-            '**a − b** 를 계산하세요. 뺄셈은 "음수를 더하기" 입니다: a − b = a + (−b) = **a + ¬b + 1**.\n\n' +
-            '결과 diff는 4비트(넘치면 16을 돌아 감기), **cout** 은 가산기의 올림을 그대로 내보내세요. (a ≥ b 이면 cout = 1이 됩니다.)',
+            '드디어 **뺄셈** 차례! 방금 만든 요령으로 덧셈 회로가 그대로 뺄셈 회로가 돼요: a − b = a + (−b) = **a + ¬b + 1**.\n\n' +
+            '결과 diff는 4비트(넘치면 16을 돌아 감기), **cout** 은 가산기의 올림을 그대로 내보내세요. (a ≥ b 이면 cout = 1이 돼요 — 이 성질은 다음 레벨의 **비교** 에 쓰여요.)',
+          coach: {
+            'offset+1@diff':
+              '1을 **두 번** 더했어요! **NEG4 안에 이미 +1이 들어 있어요.** NEG4를 쓴다면 cin은 0으로, b를 직접 뒤집는다면 cin을 1로 — 둘 중 하나만.',
+            'offset-1@diff': '**a + ¬b** 까지만 했어요. 2의 보수는 "뒤집고 **+1**" — ADD4의 **cin** 을 상수 1에 이어 보세요.',
+            'condition:b=0':
+              'diff는 맞는데 **b = 0일 때만** cout이 틀려요! NEG4로 −0을 만들면 0000이라 올림이 생기지 않거든요. NEG4 대신 **b를 직접 뒤집고 cin = 1** 로 해 보세요. 그러면 cout이 "a ≥ b"와 딱 맞아요.',
+            'inverted@cout': 'cout이 정반대예요. 가산기의 **cout을 그대로** 내보내면 돼요 (a ≥ b일 때 1).',
+          },
           hints: [
             'NEG4로 −b를 만들어 ADD4로 더해도 결과는 맞습니다. 하지만 cout이 달라질 수 있어요. 더 직접적인 방법은?',
             '"+1" 을 따로 하지 말고 가산기의 cin에 1을 넣으면 한 번에 끝납니다.',
@@ -298,9 +332,19 @@ export const chapter3: Chapter = {
         },
         en: {
           title: '4-bit Subtractor',
+          why:
+            '💳 Balances, ⏱ time left, 🎮 losing HP — subtraction is everywhere. Yet real CPUs **barely have a subtraction circuit**. This level shows you why: rewire a few lines of the adder and you are done!',
           briefing:
-            'Compute **a − b**. Subtraction is "adding a negative": a − b = a + (−b) = **a + ¬b + 1**.\n\n' +
-            'diff is 4 bits (wrapping past 16), and **cout** is the adder’s carry passed straight out. (cout becomes 1 when a ≥ b.)',
+            'Time for **subtraction**! With the trick you just learned, the adder becomes a subtractor: a − b = a + (−b) = **a + ¬b + 1**.\n\n' +
+            'diff is 4 bits (wrapping past 16), and **cout** is the adder’s carry passed straight out. (cout becomes 1 when a ≥ b — the next level uses this to **compare**.)',
+          coach: {
+            'offset+1@diff':
+              'You add 1 **twice**! **NEG4 already contains the +1.** With NEG4 keep cin at 0; if you flip b yourself, set cin to 1 — only one of them.',
+            'offset-1@diff': 'You only did **a + ¬b**. Two’s complement is "flip, then **+1**" — wire ADD4’s **cin** to Const 1.',
+            'condition:b=0':
+              'diff is right, but cout is wrong **only when b = 0**! NEG4 turns −0 into 0000, so no carry appears. Instead of NEG4, **flip b yourself and set cin = 1** — then cout matches "a ≥ b" exactly.',
+            'inverted@cout': 'cout is the exact opposite. Pass the adder’s **cout straight out** (1 when a ≥ b).',
+          },
           hints: [
             'Using NEG4 for −b and then ADD4 gives the right diff, but cout may differ. Is there a more direct way?',
             'Instead of a separate "+1", feed 1 into the adder’s cin and do it all at once.',
@@ -341,9 +385,16 @@ export const chapter3: Chapter = {
       text: {
         ko: {
           title: '4비트 비교기',
+          why:
+            '🔐 비밀번호가 맞나? (같다) 🏆 최고 점수를 넘었나? (크다) 🔁 반복을 10번 다 했나? — 프로그램의 모든 **판단(if)** 은 결국 두 수의 비교예요. 컴퓨터는 비교할 때 **실제로 빼 봐요**.',
           briefing:
+            '프로그램의 "**만약 a가 b보다 작으면…**" 은 하드웨어에서 어떻게 판단할까요? 그 정체를 만들 차례예요.\n\n' +
             '두 수를 비교해 **eq**(a = b)와 **lt**(a < b)를 내보내세요. (0~15, 부호 없는 수)\n\n' +
-            '방금 만든 감산기에 필요한 정보가 다 들어 있습니다.',
+            '방금 만든 감산기에 필요한 정보가 다 들어 있어요.',
+          coach: {
+            'inverted@lt': 'lt가 정반대예요. 감산기의 cout = 1은 **a ≥ b** 라는 뜻이에요. lt는 그 **반대** 니까 NOT을 하나 붙여 보세요.',
+            'inverted@eq': 'eq가 정반대예요. "diff의 비트 중 **하나라도 1**" 을 구했다면, 그 **반대** 가 "모두 0 = 같다" 예요.',
+          },
           hints: [
             'a − b 를 계산하면: 같을 때 결과는? a < b 일 때 cout은?',
             'eq: diff가 0000인가? = 네 비트가 모두 0인가. lt: cout의 반대.',
@@ -360,9 +411,16 @@ export const chapter3: Chapter = {
         },
         en: {
           title: '4-bit Comparator',
+          why:
+            '🔐 Is the password right? (equal) 🏆 New high score? (greater) 🔁 Looped 10 times yet? — every **decision (if)** in a program is a comparison of two numbers. To compare, a computer **actually subtracts**.',
           briefing:
+            'How does hardware decide "**if a is less than b…**"? Time to build the answer.\n\n' +
             'Compare two numbers and output **eq** (a = b) and **lt** (a < b). (0–15, unsigned)\n\n' +
             'The subtractor you just built already holds everything you need.',
+          coach: {
+            'inverted@lt': 'lt is the exact opposite. The subtractor’s cout = 1 means **a ≥ b**. lt is the **opposite**, so add a NOT.',
+            'inverted@eq': 'eq is the exact opposite. If you computed "**any** diff bit is 1", its **opposite** is "all 0 = equal".',
+          },
           hints: [
             'Compute a − b: what is the result when they are equal? What is cout when a < b?',
             'eq: is diff 0000? = are all four bits 0? lt: the opposite of cout.',
@@ -414,9 +472,17 @@ export const chapter3: Chapter = {
       text: {
         ko: {
           title: '보스: 오버플로 감지기',
+          why:
+            '📺 2014년, 싸이의 **강남스타일** 조회수가 32비트 정수의 한계(약 21억)에 다가가자 YouTube가 조회수 카운터를 64비트로 바꿨어요. 그대로 뒀다면 숫자가 넘쳐 엉뚱한 값, 심하면 **음수** 로 뒤집혔을 거예요.\n' +
+            '🚀 1996년 아리안 5 로켓도 숫자가 넘쳐서 폭발했어요. 넘침을 **알아채는 회로** 가 이번 보스예요.',
           briefing:
-            'a, b를 **부호 있는 4비트 수**(-8 ~ 7, 2의 보수)로 보고 더합니다. sum을 내보내고, 결과가 범위를 벗어나 **부호가 틀려졌으면 ovf = 1** 로 알려 주세요.\n\n' +
-            '예: 5 + 4 = 9 이지만 4비트로는 1001 = **-7**! 양수 + 양수가 음수가 되었으니 오버플로입니다.',
+            '**사고 현장:** 4비트 게임에서 공격력 7인 캐릭터가 버프로 +1을 받았더니… 공격력이 **−8** 이 됐어요! 무슨 일일까요?\n\n' +
+            'a, b를 **부호 있는 4비트 수**(−8 ~ 7, 2의 보수)로 보고 더해요. sum을 내보내고, 결과가 범위를 벗어나 **부호가 틀려졌으면 ovf = 1** 로 알려 주세요.\n\n' +
+            '예: 5 + 4 = 9 이지만 4비트로는 1001 = **−7**! 양수 + 양수가 음수가 되었으니 오버플로예요.',
+          coach: {
+            'constant@ovf': 'ovf가 늘 같은 값이에요. 오버플로는 "**a와 b의 부호(최상위 비트)가 같은데, sum의 부호가 다를 때**" 생겨요. 세 개의 최상위 비트를 꺼내 보세요.',
+            'inverted@ovf': 'ovf가 정반대예요. 부호가 **같은지** 볼 때는 XNOR, **다른지** 볼 때는 XOR — 바뀌지 않았나요?',
+          },
           hints: [
             '언제 오버플로가 날 수 있을까요? 양수 + 음수는 절대 범위를 벗어나지 않습니다.',
             '오버플로 = "a와 b의 부호가 같은데, sum의 부호가 a와 다르다". 부호는 최상위 비트(b3)입니다.',
@@ -433,9 +499,17 @@ export const chapter3: Chapter = {
         },
         en: {
           title: 'Boss: Overflow Detector',
+          why:
+            '📺 In 2014, the view count of PSY’s **Gangnam Style** approached the 32-bit integer limit (about 2.1 billion), so YouTube switched its counter to 64 bits. Left alone, the number would have overflowed into garbage — even a **negative** count.\n' +
+            '🚀 The Ariane 5 rocket exploded in 1996 because a number overflowed. This boss is a **circuit that notices** overflow.',
           briefing:
-            'Treat a and b as **signed 4-bit numbers** (-8 to 7, two’s complement) and add them. Output sum, and set **ovf = 1 if the result went out of range and its sign is wrong**.\n\n' +
-            'Example: 5 + 4 = 9, but in 4 bits that is 1001 = **-7**! Positive + positive became negative: overflow.',
+            '**Incident report:** in a 4-bit game, a hero with attack 7 got a +1 buff… and attack became **−8**! What happened?\n\n' +
+            'Treat a and b as **signed 4-bit numbers** (−8 to 7, two’s complement) and add them. Output sum, and set **ovf = 1 if the result went out of range and its sign is wrong**.\n\n' +
+            'Example: 5 + 4 = 9, but in 4 bits that is 1001 = **−7**! Positive + positive became negative: overflow.',
+          coach: {
+            'constant@ovf': 'ovf never changes. Overflow happens when "**a and b have the same sign (top bit), but sum’s sign differs**". Pull out the three top bits.',
+            'inverted@ovf': 'ovf is the exact opposite. Use XNOR to check signs are **equal** and XOR to check they **differ** — are they swapped?',
+          },
           hints: [
             'When can overflow happen at all? Positive + negative can never leave the range.',
             'Overflow = "a and b have the same sign, but sum’s sign differs from a". The sign is the top bit (b3).',

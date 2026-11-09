@@ -18,6 +18,13 @@ export interface LevelText {
   /** ① 개념 질문 → ② 부분 구조 → ③ 거의 정답 */
   hints: [string, string, string];
   principle: PrincipleCard;
+  /** 풀기 전에 보여 주는 "어디에 쓰일까?" — 실생활·컴퓨터 속 쓰임새 */
+  why?: string;
+  /**
+   * 거의 맞았을 때 레벨 맞춤 코칭 (src/game/coach.ts의 키).
+   * 예: 'offset-1'(정답보다 1 작음), 'offset+1', 'inverted@lt', 'condition:b=0', 'passthrough', 'constant'
+   */
+  coach?: Record<string, string>;
 }
 
 /** 패널에 붙는 입출력 장치 */

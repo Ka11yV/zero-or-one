@@ -9,6 +9,7 @@ import { helpCard, highlightCurrentRow, statsCard } from './sandboxPanel';
 import { timingChart } from './timingChart';
 import { memoryViewer } from './memoryViewer';
 import { keypadCard, seg7Card } from './devices';
+import { diagnose, levelCoachText, type Coaching } from '../game/coach';
 import type { PanelHooks, Toast } from './workspace';
 
 type Tab = 'brief' | 'truth' | 'hint';
@@ -28,6 +29,8 @@ export function levelPanel(panel: HTMLElement, editor: Editor, toast: Toast, opt
   let hintsShown = opts.hintsUsed;
   let result: VerifyResult | null = null;
   let rowsEl: HTMLTableRowElement[] = [];
+  /** 테스트 버튼을 한 번이라도 눌렀나 (그 전에는 코칭을 보여 주지 않음: 빈 회로에 잔소리하지 않게) */
+  let tested = false;
 
   const tabs = h('div', { class: 'tabs', role: 'tablist' });
   const body = h('section', { class: 'card tab-body' });
@@ -50,6 +53,14 @@ export function levelPanel(panel: HTMLElement, editor: Editor, toast: Toast, opt
     result = runTest(toChipDef(editor.doc), editor.lib, level.test);
   };
 
+  /** 거의 맞았을 때 코칭 문구 (레벨 맞춤 → 일반) */
+  const coaching = (): string | null => {
+    if (!tested || !result) return null;
+    const c = diagnose(result, level);
+    if (!c) return null;
+    return levelCoachText(c, text().coach) ?? genericCoach(c);
+  };
+
   const renderTabs = () => {
     tabs.textContent = '';
     for (const id of ['brief', 'truth', 'hint'] as Tab[]) {
@@ -69,8 +80,9 @@ export function levelPanel(panel: HTMLElement, editor: Editor, toast: Toast, opt
     const tx = text();
     const pinList = (pins: Level['inputs']) => pins.map((p) => (p.width > 1 ? `${p.name}[${p.width}]` : p.name)).join(', ');
     const chips = level.allowedChips.filter((c) => !c.startsWith('CONST'));
+    body.append(h('h2', { class: 'level-title' }, `${level.id} · ${tx.title}`));
+    if (tx.why) body.append(h('aside', { class: 'why-card' }, h('h3', {}, t('level.why')), rich(tx.why)));
     body.append(
-      h('h2', { class: 'level-title' }, `${level.id} · ${tx.title}`),
       rich(tx.briefing),
       h(
         'ul',
@@ -143,6 +155,8 @@ export function levelPanel(panel: HTMLElement, editor: Editor, toast: Toast, opt
       body.append(h('p', { class: 'error' }, t('level.compileError', { msg: t(`err.${result.error.code}`) })));
       return;
     }
+    const coach = coaching();
+    if (coach) body.append(h('aside', { class: 'coach-card', role: 'status' }, h('span', { class: 'coach-icon', 'aria-hidden': 'true' }, '💡'), rich(coach)));
     if (level.test.kind === 'sequence' && result) return renderSequence(level.test, result);
     if (level.test.kind !== 'truth' || !result) return;
     if (result.error) {
@@ -220,16 +234,28 @@ export function levelPanel(panel: HTMLElement, editor: Editor, toast: Toast, opt
     summary.textContent = '';
     if (!result) return;
     if (result.error) summary.append(h('span', { class: 'error' }, t('level.compileError', { msg: t(`err.${result.error.code}`) })));
-    else if (result.failedCount) summary.append(h('span', { class: 'warn' }, t('level.mismatch', { n: result.failedCount })));
+    else if (result.failedCount) {
+      summary.append(h('span', { class: 'warn' }, t('level.mismatch', { n: result.failedCount })));
+      if (coaching()) {
+        const b = h('button', { type: 'button', class: 'coach-link' }, `💡 ${t('coach.link')}`);
+        b.onclick = () => {
+          tab = 'truth';
+          renderTabs();
+          renderBody();
+        };
+        summary.append(b);
+      }
+    }
     else summary.append(h('span', { class: 'ok' }, t('level.allMatch')));
   };
 
   const runTestNow = () => {
+    tested = true;
     evaluate();
     if (!result) return;
     if (result.error) toast(t('level.compileError', { msg: t(`err.${result.error.code}`) }), 'error');
     else if (!result.pass) {
-      toast(t('level.failed', { n: result.failedCount }), 'error');
+      toast(t('level.failed', { n: result.failedCount }) + (coaching() ? ` · 💡 ${t('coach.link')}` : ''), 'error');
       tab = 'truth';
     } else opts.onPass(editor.metrics?.nandCount ?? 0);
     renderTabs();
@@ -287,4 +313,21 @@ export function levelPanel(panel: HTMLElement, editor: Editor, toast: Toast, opt
       inputs.dispose();
     },
   };
+}
+
+/** 일반 코칭 문구 */
+function genericCoach(c: Coaching): string {
+  const cond = c.cond
+    ? c.cond.bit !== undefined
+      ? t('coach.condBit', { pin: c.cond.pin, bit: c.cond.bit, v: c.cond.value })
+      : t('coach.condValue', { pin: c.cond.pin, v: c.cond.value })
+    : '';
+  switch (c.kind) {
+    case 'offset':
+      return Math.abs(c.k!) === 1 ? t(c.k! > 0 ? 'coach.plus1' : 'coach.minus1', { pin: c.pin }) : t(c.k! > 0 ? 'coach.bigger' : 'coach.smaller', { pin: c.pin, n: Math.abs(c.k!) });
+    case 'condition':
+      return t('coach.condition', { cond });
+    default:
+      return t(`coach.${c.kind}`, { pin: c.pin, other: c.other ?? '', v: c.value ?? 0 });
+  }
 }
