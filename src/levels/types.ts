@@ -37,6 +37,8 @@ export interface LevelDevices {
   wheel?: string[];
   /** 세로셈: a + b (+ cin)를 자리별 올림과 함께, 내 회로 출력과 비교 */
   columnAdd?: { a: string; b: string; cin?: string; sum: string; cout: string };
+  /** 전가산기 단계별 보기 (a, b, cin → 반가산기① → 반가산기② → OR). 버튼을 눌러야 펼쳐짐 */
+  faSteps?: boolean;
 }
 
 export interface CircuitLevel {

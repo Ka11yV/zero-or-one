@@ -8,7 +8,7 @@ import { formatValue, inputsCard } from './inputsCard';
 import { helpCard, highlightCurrentRow, statsCard } from './sandboxPanel';
 import { timingChart } from './timingChart';
 import { memoryViewer } from './memoryViewer';
-import { columnAddCard, keypadCard, numberWheelCard, seg7Card, signed4 } from './devices';
+import { columnAddCard, fullAdderStepsCard, keypadCard, numberWheelCard, seg7Card, signed4 } from './devices';
 import { diagnose, levelCoachText, type Coaching } from '../game/coach';
 import type { PanelHooks, Toast } from './workspace';
 
@@ -46,8 +46,9 @@ export function levelPanel(panel: HTMLElement, editor: Editor, toast: Toast, opt
   const display = seg7Card(editor, () => level.devices?.seg7 ?? []);
   const wheel = numberWheelCard(editor, () => level.devices?.wheel ?? []);
   const column = columnAddCard(editor, () => level.devices?.columnAdd);
+  const faSteps = fullAdderStepsCard(editor, () => !!level.devices?.faSteps);
   const keypad = level.devices?.keypad && clockPin ? keypadCard(editor, level.devices.keypad.pin, clockPin) : null;
-  panel.append(tabs, body, ...(keypad ? [keypad.el] : []), display.el, wheel.el, column.el, inputs.el, h('div', { class: 'test-bar' }, summary, testBtn), memory.el, ...(chart ? [chart.el] : []), statsBox, helpBox);
+  panel.append(tabs, body, ...(keypad ? [keypad.el] : []), display.el, wheel.el, faSteps.el, column.el, inputs.el, h('div', { class: 'test-bar' }, summary, testBtn), memory.el, ...(chart ? [chart.el] : []), statsBox, helpBox);
 
   const text = () => level.text[getLang()];
 
@@ -292,6 +293,7 @@ export function levelPanel(panel: HTMLElement, editor: Editor, toast: Toast, opt
     display.render();
     wheel.render();
     column.render();
+    faSteps.render();
     keypad?.render();
   };
 
@@ -308,6 +310,7 @@ export function levelPanel(panel: HTMLElement, editor: Editor, toast: Toast, opt
       display.sync();
       wheel.sync();
       column.sync();
+      faSteps.sync();
     },
     sim: () => {
       highlightCurrentRow(editor, rowsEl);
@@ -315,6 +318,7 @@ export function levelPanel(panel: HTMLElement, editor: Editor, toast: Toast, opt
       display.sync();
       wheel.sync();
       column.sync();
+      faSteps.sync();
       chart?.sample();
       memory.sync();
     },

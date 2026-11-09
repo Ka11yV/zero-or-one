@@ -76,3 +76,14 @@ describe('NAND 트랜지스터', () => {
     expect(nandSwitches(0, 0).out).toBe(1);
   });
 });
+
+describe('전가산기 단계', () => {
+  it('(a + b) + cin 두 단계 + OR = 실제 덧셈, 두 올림이 동시에 1인 경우 없음', async () => {
+    const { fullAdderSteps } = await import('../../src/ui/devices');
+    for (const a of [0, 1]) for (const b of [0, 1]) for (const c of [0, 1]) {
+      const r = fullAdderSteps(a, b, c);
+      expect(r.cout * 2 + r.sum).toBe(a + b + c);
+      expect(r.c1 & r.c2).toBe(0);
+    }
+  });
+});

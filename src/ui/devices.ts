@@ -395,3 +395,117 @@ export function columnAddCard(editor: Editor, spec: () => ColumnAddPins | undefi
   const sync = () => refresh?.();
   return { el, render, sync };
 }
+
+// ---------- 전가산기 단계별 보기 ----------
+
+/** 전가산기를 두 번의 반가산기 + OR로 나눈 값 (순수 함수) */
+export function fullAdderSteps(a: number, b: number, cin: number) {
+  const t1 = a + b;
+  const s1 = t1 & 1;
+  const c1 = t1 >> 1;
+  const t2 = s1 + cin;
+  const sum = t2 & 1;
+  const c2 = t2 >> 1;
+  return { t1, s1, c1, t2, sum, c2, cout: c1 | c2 };
+}
+
+/**
+ * 전가산기 단계별 카드: (a + b) + cin 을 반가산기① → 반가산기② → OR 로.
+ * 회로 구조가 드러나므로 버튼을 눌러야 펼쳐진다.
+ */
+export function fullAdderStepsCard(editor: Editor, enabled: () => boolean): { el: HTMLElement; render(): void; sync(): void } {
+  const el = h('section', { class: 'card device fa-card' });
+  let open = false;
+  let refresh: (() => void) | null = null;
+  const render = () => {
+    el.textContent = '';
+    refresh = null;
+    el.hidden = !enabled();
+    if (el.hidden) return;
+    el.append(h('h2', {}, t('device.faSteps')));
+    if (!open) {
+      const b = h('button', { type: 'button', class: 'btn fa-reveal' }, `🔍 ${t('device.faReveal')}`);
+      b.onclick = () => {
+        open = true;
+        render();
+      };
+      el.append(rich(t('device.faIntro'), 'rich fa-intro'), b, h('p', { class: 'muted small' }, t('device.faSpoiler')));
+      return;
+    }
+    // 블록 그림
+    const svgEl = <K extends keyof SVGElementTagNameMap>(tag: K, attrs: Record<string, string>, text?: string) => {
+      const e = document.createElementNS(SVG_NS, tag);
+      for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+      if (text !== undefined) e.textContent = text;
+      return e;
+    };
+    const svg = svgEl('svg', { viewBox: '0 0 300 185', class: 'fa-diagram', role: 'img', 'aria-label': t('device.faSteps') });
+    const wire = (d: string) => svgEl('path', { d, class: 'fw' });
+    const W = {
+      a: wire('M 26 30 H 60'),
+      b: wire('M 26 60 H 60'),
+      cin: wire('M 26 128 H 165'),
+      s1: wire('M 120 34 H 145 V 100 H 165'),
+      c1: wire('M 120 58 H 134 V 158 H 238'),
+      sum: wire('M 225 100 H 272'),
+      c2: wire('M 225 128 H 230 V 170 H 238'),
+      cout: wire('M 278 164 H 292'),
+    };
+    const box = (x: number, y: number, w: number, hh: number, label: string, sub: string) => {
+      const g = svgEl('g', { class: 'fbox' });
+      g.append(
+        svgEl('rect', { x: String(x), y: String(y), width: String(w), height: String(hh), rx: '7' }),
+        svgEl('text', { x: String(x + w / 2), y: String(y + hh / 2 - 1), class: 'fb-title' }, label),
+        svgEl('text', { x: String(x + w / 2), y: String(y + hh / 2 + 12), class: 'fb-sub' }, sub),
+      );
+      return g;
+    };
+    const val = (x: number, y: number) => svgEl('text', { x: String(x), y: String(y), class: 'fv' });
+    const V = {
+      a: val(42, 24),
+      b: val(42, 54),
+      cin: val(70, 122),
+      s1: val(152, 62),
+      c1: val(142, 150),
+      sum: val(250, 94),
+      c2: val(214, 164),
+      cout: val(292, 158),
+    };
+    svg.append(
+      ...Object.values(W),
+      box(60, 18, 60, 54, t('device.faHA'), '①'),
+      box(165, 88, 60, 52, t('device.faHA'), '②'),
+      box(238, 150, 40, 28, 'OR', ''),
+      svgEl('text', { x: '4', y: '34', class: 'fl' }, 'a'),
+      svgEl('text', { x: '4', y: '64', class: 'fl' }, 'b'),
+      svgEl('text', { x: '0', y: '132', class: 'fl' }, 'cin'),
+      svgEl('text', { x: '276', y: '104', class: 'fl out' }, 'sum'),
+      svgEl('text', { x: '248', y: '140', class: 'fl out' }, 'cout'),
+      ...Object.values(V),
+    );
+    const steps = h('ol', { class: 'fa-steps' });
+    el.append(rich(t('device.faIntro'), 'rich fa-intro'), svg, steps, rich(t('device.faWhyOr'), 'rich fa-why'));
+    refresh = () => {
+      const v = new Map(editor.ioValues().map((x) => [x.name, x.value ?? 0]));
+      const a = (v.get('a') ?? 0) & 1;
+      const b = (v.get('b') ?? 0) & 1;
+      const cin = (v.get('cin') ?? 0) & 1;
+      const r = fullAdderSteps(a, b, cin);
+      const vals: Record<keyof typeof W, number> = { a, b, cin, s1: r.s1, c1: r.c1, sum: r.sum, c2: r.c2, cout: r.cout };
+      for (const k of Object.keys(W) as (keyof typeof W)[]) {
+        W[k].setAttribute('class', `fw ${vals[k] ? 'on' : ''}`);
+        V[k].textContent = String(vals[k]);
+        V[k].setAttribute('class', `fv ${vals[k] ? 'on' : ''}`);
+      }
+      steps.replaceChildren(
+        h('li', {}, rich(t('device.faStep1', { a, b, t: r.t1, s: r.s1, c: r.c1 }), 'rich')),
+        h('li', {}, rich(t('device.faStep2', { s: r.s1, cin, t: r.t2, sum: r.sum, c: r.c2 }), 'rich')),
+        h('li', {}, rich(t('device.faStep3', { c1: r.c1, c2: r.c2, cout: r.cout }), 'rich')),
+        h('li', { class: 'muted' }, rich(t('device.faCheck', { a, b, cin, total: a + b + cin, cout: r.cout, sum: r.sum }), 'rich')),
+      );
+    };
+    refresh();
+  };
+  const sync = () => refresh?.();
+  return { el, render, sync };
+}

@@ -125,7 +125,7 @@ export const chapter3: Chapter = {
       test: autoTest([pin('a'), pin('b'), pin('cin')], (a, b, c) => [(a + b + c) & 1, (a + b + c) >> 1]),
       unlocks: { chipId: 'FULL_ADDER' },
       stars: { maxNand: 13 },
-      devices: { columnAdd: { a: 'a', b: 'b', cin: 'cin', sum: 'sum', cout: 'cout' } },
+      devices: { columnAdd: { a: 'a', b: 'b', cin: 'cin', sum: 'sum', cout: 'cout' }, faSteps: true },
       text: {
         ko: {
           title: '전가산기',
