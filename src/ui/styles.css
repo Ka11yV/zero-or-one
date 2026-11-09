@@ -117,7 +117,7 @@ body {
 .workspace {
   flex: 1;
   display: grid;
-  grid-template-columns: 180px 1fr 280px;
+  grid-template-columns: 180px 1fr clamp(290px, 24vw, 360px);
   min-height: 0;
 }
 
@@ -403,8 +403,41 @@ dl.stats dd {
 .rich p {
   font-size: 13px;
   line-height: 1.7;
-  margin: 0 0 8px;
+  margin: 0 0 10px;
   white-space: pre-line;
+}
+/* 한국어는 낱말 중간에서 끊지 않고 띄어쓰기에서만 줄바꿈 (너무 긴 낱말만 예외) */
+body {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+.rich-head {
+  margin: 14px 0 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.rich-head::before {
+  content: '';
+  width: 3px;
+  height: 12px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+.rich > .rich-head:first-child {
+  margin-top: 0;
+}
+.rich-list {
+  margin: -4px 0 10px;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.75;
+}
+.rich-list li::marker {
+  color: var(--muted);
 }
 .rich strong {
   color: var(--accent);
@@ -1371,7 +1404,9 @@ textarea.code {
     overflow: visible;
   }
 }
+/* 수식·비트 예시는 중간에서 끊지 않는다 */
 code.inline {
+  white-space: nowrap;
   font: 0.92em 'SF Mono', ui-monospace, monospace;
   background: var(--bg);
   border: 1px solid var(--border);

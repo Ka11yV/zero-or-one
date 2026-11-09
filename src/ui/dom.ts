@@ -16,17 +16,43 @@ export function button(label: string, onClick: () => void, cls = ''): HTMLButton
   return b;
 }
 
-/** 아주 작은 마크다운: 빈 줄 = 단락, 줄바꿈 유지, **굵게** */
+/** 인라인: **굵게**, `코드`(줄바꿈 안 됨) */
+function inline(el: HTMLElement, text: string): void {
+  text.split(/(\*\*[^*]+\*\*|`[^`]+`)/g).forEach((part) => {
+    if (part.startsWith('**') && part.endsWith('**')) el.append(h('strong', {}, part.slice(2, -2)));
+    else if (part.length > 2 && part.startsWith('`') && part.endsWith('`')) el.append(h('code', { class: 'inline' }, part.slice(1, -1)));
+    else if (part) el.append(part);
+  });
+}
+
+/** 아주 작은 마크다운: 빈 줄 = 단락, 줄바꿈 유지, "- " 줄 = 목록, 단락 첫 줄 **굵게**만 = 작은 제목, **굵게**, `코드` */
 export function rich(text: string, cls = 'rich'): HTMLElement {
   const wrap = h('div', { class: cls });
   for (const para of text.split(/\n{2,}/)) {
-    const p = h('p');
-    para.split(/(\*\*[^*]+\*\*|`[^`]+`)/g).forEach((part) => {
-      if (part.startsWith('**') && part.endsWith('**')) p.append(h('strong', {}, part.slice(2, -2)));
-      else if (part.length > 2 && part.startsWith('`') && part.endsWith('`')) p.append(h('code', { class: 'inline' }, part.slice(1, -1)));
-      else if (part) p.append(part);
-    });
-    wrap.append(p);
+    // 단락 안에서 "- "로 시작하는 줄이 이어지면 목록으로
+    let p: HTMLElement | null = null;
+    let ul: HTMLElement | null = null;
+    for (const line of para.split('\n')) {
+      const item = /^\s*-\s+(.*)$/.exec(line);
+      const head = /^\*\*([^*]+)\*\*$/.exec(line.trim());
+      // 단락 첫 줄이 통째로 굵은 글씨면 작은 제목
+      if (head && !p && !ul) {
+        wrap.append(h('h4', { class: 'rich-head' }, head[1]!));
+        continue;
+      }
+      if (item) {
+        p = null;
+        if (!ul) wrap.append((ul = h('ul', { class: 'rich-list' })));
+        const li = h('li');
+        inline(li, item[1]!);
+        ul.append(li);
+      } else {
+        ul = null;
+        if (p) p.append('\n');
+        else wrap.append((p = h('p')));
+        inline(p, line);
+      }
+    }
   }
   return wrap;
 }
