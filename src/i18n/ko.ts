@@ -313,6 +313,12 @@ export const ko = {
   'speed.5': '아주 빠르게',
   'speed.6': '즉시',
 
+  'palette.search': '부품 검색',
+  'palette.searchClear': '검색어 지우기',
+  'palette.noMatch': '"{q}"에 맞는 부품이 없어요',
+  'palette.searchHint': '↑↓로 고르고 Enter로 가운데에 놓기 · Esc로 지우기',
+  'palette.placed': '{name}을(를) 놓았어요',
+  'wire.pending': '이어 줄 핀을 클릭하세요 · Esc나 빈 곳 클릭으로 취소',
   'palette.title': '부품',
   'palette.io': '입출력',
   'palette.gates': '게이트',
@@ -366,9 +372,9 @@ export const ko = {
 
 
   'help.body':
-    '드래그: 이동 · 핀에서 드래그: 배선 · 빈 곳 드래그: 범위 선택\n' +
+    '드래그: 이동 · 핀에서 드래그 또는 Ctrl/⌘+핀 클릭 → 다른 핀 클릭: 배선 · 빈 곳 드래그: 범위 선택\n' +
     '입력 스위치 클릭: 0/1 전환 · 스페이스+드래그 / 휠: 화면 이동 · Ctrl/⌘+휠: 확대\n' +
-    'Delete: 삭제 · ⌘Z / ⌘⇧Z: 취소/재실행 · ⌘C / ⌘V / ⌘D: 복사/붙여넣기/복제 · F: 전체 보기',
+    '/: 부품 검색 · Delete: 삭제 · ⌘Z / ⌘⇧Z: 취소/재실행 · ⌘C / ⌘V / ⌘D: 복사/붙여넣기/복제 · F: 전체 보기',
 } as const;
 
 export type MessageKey = keyof typeof ko;

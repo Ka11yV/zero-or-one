@@ -2529,3 +2529,85 @@ textarea.code.small-code {
     animation: none;
   }
 }
+
+/* ---------- 부품 검색 ---------- */
+.palette-search {
+  position: sticky;
+  top: -12px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 -12px 10px;
+  padding: 8px 12px;
+  background: var(--surface);
+  border-bottom: 1px solid transparent;
+}
+.palette-search[hidden] {
+  display: none;
+}
+.palette-search .search-icon {
+  position: absolute;
+  left: 21px;
+  color: var(--muted);
+  font-size: 15px;
+  pointer-events: none;
+}
+.palette-search-input {
+  flex: 1;
+  min-width: 0;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 26px 7px 28px;
+  font: inherit;
+  font-size: 13px;
+}
+.palette-search-input::-webkit-search-cancel-button {
+  display: none;
+}
+.palette-search-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(255, 181, 71, 0.18);
+}
+.palette-search-clear {
+  position: absolute;
+  right: 44px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 4px;
+}
+.palette-search-clear:hover {
+  color: var(--text);
+}
+.palette-search kbd {
+  font: 11px 'SF Mono', ui-monospace, monospace;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 1px 6px;
+}
+.palette-search-input:focus ~ kbd {
+  visibility: hidden;
+}
+.part.active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface-2));
+}
+.part-label mark {
+  background: rgba(255, 181, 71, 0.28);
+  color: inherit;
+  border-radius: 2px;
+  padding: 0 1px;
+}
+.palette-empty {
+  font-size: 12px;
+  color: var(--muted);
+  padding: 10px 2px;
+}

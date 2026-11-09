@@ -314,6 +314,12 @@ export const en: Record<MessageKey, string> = {
   'speed.5': 'Very fast',
   'speed.6': 'Instant',
 
+  'palette.search': 'Search parts',
+  'palette.searchClear': 'Clear search',
+  'palette.noMatch': 'No parts match "{q}"',
+  'palette.searchHint': '↑↓ to choose · Enter to place in the center · Esc to clear',
+  'palette.placed': 'Placed {name}',
+  'wire.pending': 'Click the pin to connect to · Esc or click empty space to cancel',
   'palette.title': 'Parts',
   'palette.io': 'I/O',
   'palette.gates': 'Gates',
@@ -367,7 +373,7 @@ export const en: Record<MessageKey, string> = {
 
 
   'help.body':
-    'Drag: move · Drag from a pin: wire · Drag on empty space: box select\n' +
+    'Drag: move · Drag from a pin, or Ctrl/⌘+click a pin then click another: wire · Drag on empty space: box select\n' +
     'Click an input switch: toggle 0/1 · Space+drag / wheel: pan · Ctrl/⌘+wheel: zoom\n' +
-    'Delete: remove · ⌘Z / ⌘⇧Z: undo/redo · ⌘C / ⌘V / ⌘D: copy/paste/duplicate · F: fit view',
+    '/: search parts · Delete: remove · ⌘Z / ⌘⇧Z: undo/redo · ⌘C / ⌘V / ⌘D: copy/paste/duplicate · F: fit view',
 };

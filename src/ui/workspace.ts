@@ -6,6 +6,9 @@ import type { ChipLibrary } from '../sim';
 import { h } from './dom';
 import { muteButton } from './fx/muteButton';
 import { isNewChip, markChipSeen } from '../storage/seenChips';
+import { CHIP_SUMMARY } from '../levels/chipInfo';
+import { LEVELS } from '../levels';
+import { matchRange, searchEntries, type SearchEntry } from './paletteSearch';
 
 /** 오른쪽 패널이 편집기 이벤트에 반응하는 훅 */
 export interface PanelHooks {
@@ -51,6 +54,25 @@ function chipName(id: string): string {
   const m = /^(SPLIT|MERGE)(\d+)$/.exec(id);
   if (m) return t(`chip.${m[1]}`, { w: m[2]! });
   return isBuiltinGate(id) ? t(`chip.${id}`) : id;
+}
+
+/** 검색용 별칭: 두 언어의 레벨 제목·칩 설명 + 내장 부품의 흔한 이름 */
+const BUILTIN_ALIASES: Record<string, string[]> = {
+  NAND: ['nand', '낸드', '게이트', 'gate'],
+  CONST0: ['constant', 'const', '상수', 'zero', '영', 'low'],
+  CONST1: ['constant', 'const', '상수', 'one', '일', 'high'],
+  SPLIT: ['split', 'bus', '버스', '나누기', '분리', '펼치기'],
+  MERGE: ['merge', 'bus', '버스', '합치기', '묶기'],
+};
+
+function chipKeywords(id: string): string[] {
+  const base = id.replace(/\d+$/, '');
+  const summary = CHIP_SUMMARY[id];
+  return [
+    ...(BUILTIN_ALIASES[id] ?? BUILTIN_ALIASES[base] ?? []),
+    ...LEVELS.filter((l) => l.unlocks?.chipId === id).flatMap((l) => [l.text.ko.title, l.text.en.title]),
+    ...(summary ? [summary.ko, summary.en] : []),
+  ];
 }
 
 function chipIcon(id: string): string {
@@ -114,6 +136,7 @@ export function mountWorkspace(root: HTMLElement, cfg: WorkspaceConfig): Workspa
     messages: {
       connect: (reason, w) => t(`connect.${reason}`, w ? { a: w[0], b: w[1] } : {}),
       renameInvalid: () => t('name.invalid'),
+      pendingWire: () => t('wire.pending'),
     },
   });
   speed.value = String(editor.speed);
@@ -199,52 +222,149 @@ export function mountWorkspace(root: HTMLElement, cfg: WorkspaceConfig): Workspa
   resetBtn.onclick = () => cfg.initialDoc && editor.resetTo(cfg.initialDoc());
   langBtn.onclick = () => setLang(getLang() === 'ko' ? 'en' : 'ko');
 
-  // ---------- 팔레트 ----------
+  // ---------- 팔레트 (검색 포함) ----------
+  type PaletteEntry = SearchEntry & { item: PlaceItem; icon: string };
+  let query = '';
+  let active = 0;
+  let visible: PaletteEntry[] = [];
+  const searchInput = h('input', {
+    type: 'search',
+    class: 'palette-search-input',
+    spellcheck: 'false',
+    autocomplete: 'off',
+    enterkeyhint: 'done',
+  });
+  const clearSearch = h('button', { type: 'button', class: 'palette-search-clear', hidden: '' }, '×');
+  const searchBox = h('div', { class: 'palette-search' }, h('span', { class: 'search-icon', 'aria-hidden': 'true' }, '⌕'), searchInput, clearSearch, h('kbd', {}, '/'));
+  const partsWrap = h('div', { class: 'palette-parts' });
+  const paletteTitle = h('h2', {});
+  const paletteHint = h('p', { class: 'hint' });
+  palette.append(paletteTitle, searchBox, partsWrap, paletteHint);
+
+  const unfresh = (chipId: string | undefined, b?: HTMLElement) => {
+    if (!chipId || !isNewChip(chipId)) return;
+    markChipSeen(chipId);
+    b?.classList.remove('fresh');
+    b?.querySelector('.new-badge')?.remove();
+  };
+
+  /** 이름 안의 검색어를 <mark>로 */
+  const labelWithMatch = (label: string): (Node | string)[] => {
+    const r = matchRange(label, query);
+    return r ? [label.slice(0, r[0]), h('mark', {}, label.slice(r[0], r[1])), label.slice(r[1])] : [label];
+  };
+
+  const sections = (): { titleKey: string; entries: PaletteEntry[] }[] => {
+    const chipEntry = (id: string, icon = chipIcon(id)): PaletteEntry => ({ id, label: chipName(id), icon, keywords: chipKeywords(id), item: { kind: 'chip', chip: id } });
+    return [
+      {
+        titleKey: 'palette.io',
+        entries: cfg.paletteIO
+          ? [
+              { id: 'INPUT', label: t('palette.input'), icon: '⏻', keywords: ['input', 'switch', '입력', '스위치', 'in'], item: { kind: 'input' } },
+              { id: 'OUTPUT', label: t('palette.output'), icon: '◉', keywords: ['output', 'lamp', 'led', '출력', '램프', 'out'], item: { kind: 'output' } },
+            ]
+          : [],
+      },
+      { titleKey: 'palette.gates', entries: cfg.paletteChips.filter(isBuiltinGate).map((id) => chipEntry(id)) },
+      { titleKey: 'palette.chips', entries: cfg.paletteChips.filter((c) => !isBuiltinGate(c) && !isBus(c)).map((id) => chipEntry(id)) },
+      { titleKey: 'palette.custom', entries: (cfg.paletteCustom ?? []).map((id) => chipEntry(id, '◆')) },
+      { titleKey: 'palette.bus', entries: cfg.paletteChips.filter(isBus).map((id) => chipEntry(id)) },
+    ];
+  };
+
   const renderPalette = () => {
-    palette.textContent = '';
-    palette.append(h('h2', {}, t('palette.title')));
-    const section = (titleKey: string, items: { item: PlaceItem; label: string; icon: string }[]) => {
-      if (!items.length) return;
-      palette.append(h('h3', {}, t(titleKey)));
+    paletteTitle.textContent = t('palette.title');
+    searchInput.placeholder = t('palette.search');
+    searchInput.setAttribute('aria-label', t('palette.search'));
+    clearSearch.title = t('palette.searchClear');
+    clearSearch.hidden = !query;
+    partsWrap.textContent = '';
+    visible = [];
+    const all = sections();
+    const total = all.reduce((n, s) => n + s.entries.length, 0);
+    searchBox.hidden = total < 2;
+    for (const sec of all) {
+      const entries = query ? searchEntries(query, sec.entries) : sec.entries;
+      if (!entries.length) continue;
+      partsWrap.append(h('h3', {}, t(sec.titleKey)));
       const list = h('div', { class: 'parts' });
-      for (const e of items) {
+      for (const e of entries) {
+        const idx = visible.length;
+        visible.push(e);
         const chipId = e.item.kind === 'chip' ? e.item.chip : undefined;
         // NEW 배지는 플레이어가 만든 칩에만 (NAND·상수·버스 같은 내장 부품은 제외)
         const fresh = chipId !== undefined && cfg.lib.get(chipId)?.kind === 'composite' && isNewChip(chipId);
         const b = h(
           'button',
-          { type: 'button', class: `part ${fresh ? 'fresh' : ''}`, title: t('palette.hint') },
+          { type: 'button', class: `part ${fresh ? 'fresh' : ''} ${query && idx === active ? 'active' : ''}`, title: t('palette.hint'), 'data-index': String(idx) },
           h('span', { class: 'icon' }, e.icon),
-          e.label,
+          h('span', { class: 'part-label' }, ...labelWithMatch(e.label)),
           fresh ? h('span', { class: 'new-badge' }, t('palette.new')) : null,
         );
         b.addEventListener('pointerdown', (ev) => {
           if (ev.button !== 0) return;
-          if (fresh && chipId) {
-            markChipSeen(chipId);
-            b.classList.remove('fresh');
-            b.querySelector('.new-badge')?.remove();
-          }
+          if (fresh) unfresh(chipId, b);
           ev.preventDefault();
           editor.beginPaletteDrag(e.item, ev);
         });
         list.append(b);
       }
-      palette.append(list);
-    };
-    const chipItem = (id: string) => ({ item: { kind: 'chip', chip: id } as PlaceItem, label: chipName(id), icon: chipIcon(id) });
-    if (cfg.paletteIO) {
-      section('palette.io', [
-        { item: { kind: 'input' }, label: t('palette.input'), icon: '⏻' },
-        { item: { kind: 'output' }, label: t('palette.output'), icon: '◉' },
-      ]);
+      partsWrap.append(list);
     }
-    section('palette.gates', cfg.paletteChips.filter(isBuiltinGate).map(chipItem));
-    section('palette.chips', cfg.paletteChips.filter((c) => !isBuiltinGate(c) && !isBus(c)).map(chipItem));
-    section('palette.custom', (cfg.paletteCustom ?? []).map((id) => ({ ...chipItem(id), icon: '◆' })));
-    section('palette.bus', cfg.paletteChips.filter(isBus).map(chipItem));
-    palette.append(h('p', { class: 'hint' }, cfg.paletteChips.length || cfg.paletteIO ? t('palette.hint') : t('level.noChips')));
+    if (query && !visible.length) partsWrap.append(h('p', { class: 'palette-empty' }, t('palette.noMatch', { q: query.trim() })));
+    paletteHint.textContent = query && visible.length ? t('palette.searchHint') : cfg.paletteChips.length || cfg.paletteIO ? t('palette.hint') : t('level.noChips');
   };
+
+  const setActive = (i: number) => {
+    if (!visible.length) return;
+    active = (i + visible.length) % visible.length;
+    for (const b of partsWrap.querySelectorAll<HTMLElement>('.part')) b.classList.toggle('active', Number(b.dataset.index) === active);
+    partsWrap.querySelector<HTMLElement>('.part.active')?.scrollIntoView({ block: 'nearest' });
+  };
+  searchInput.addEventListener('input', () => {
+    query = searchInput.value;
+    active = 0;
+    renderPalette();
+  });
+  searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      setActive(active + (e.key === 'ArrowDown' ? 1 : -1));
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      const pick = visible[active];
+      if (!pick) return;
+      if (pick.item.kind === 'chip') unfresh(pick.item.chip);
+      editor.placeAtCenter(pick.item);
+      toast(t('palette.placed', { name: pick.label }));
+      searchInput.select();
+    } else if (e.key === 'Escape') {
+      e.stopPropagation();
+      if (query) {
+        searchInput.value = '';
+        query = '';
+        renderPalette();
+      } else searchInput.blur();
+    }
+  });
+  clearSearch.onclick = () => {
+    searchInput.value = '';
+    query = '';
+    renderPalette();
+    searchInput.focus();
+  };
+  // "/" 키로 검색창으로 (입력 중이 아닐 때)
+  const onSlash = (e: KeyboardEvent) => {
+    if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey || searchBox.hidden) return;
+    const el = e.target as HTMLElement | null;
+    if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable)) return;
+    if (document.querySelector('.modal-backdrop')) return;
+    e.preventDefault();
+    searchInput.focus();
+    searchInput.select();
+  };
+  document.addEventListener('keydown', onSlash);
 
   // ---------- 상태 표시 ----------
   const renderStatus = () => {
@@ -340,6 +460,7 @@ export function mountWorkspace(root: HTMLElement, cfg: WorkspaceConfig): Workspa
       offLang();
       document.removeEventListener('pointerdown', onDocDown);
       document.removeEventListener('keydown', onDocKey);
+      document.removeEventListener('keydown', onSlash);
       clearTimeout(toastTimer);
       editor.dispose();
     },

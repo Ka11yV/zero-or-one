@@ -47,7 +47,7 @@ export const SPEEDS = [
 type Drag =
   | { kind: 'none' }
   | { kind: 'pan'; last: Pt }
-  | { kind: 'wire'; drag: WireDrag }
+  | { kind: 'wire'; drag: WireDrag; /** Ctrl(⌘)을 누르고 시작: 끌지 않고 떼면 클릭 연결 대기로 */ click?: Pt }
   | { kind: 'move'; start: Pt; applied: Pt; moved: boolean; toggleInput?: string; deselectOnClick?: string }
   | { kind: 'box'; start: Pt; rect: Rect; additive: boolean };
 
@@ -62,6 +62,8 @@ export interface EditorOptions {
   messages: {
     connect: (reason: 'same-role' | 'width' | 'self', widths?: [number, number]) => string;
     renameInvalid: () => string;
+    /** 클릭 연결: 첫 핀을 고른 뒤 안내 */
+    pendingWire?: () => string;
   };
 }
 
@@ -95,6 +97,8 @@ export class Editor {
   private drag: Drag = { kind: 'none' };
   private hoverPin?: string;
   private hoverWire?: string;
+  /** 클릭 연결 대기: Ctrl(⌘)+클릭으로 고른 첫 핀. 다른 핀을 클릭하면 연결, 빈 곳·Esc면 취소 */
+  private pending: { fromKey: string; to: Pt; target?: PinGeom; valid: boolean } | null = null;
   private ghost?: RenderState['ghost'];
   private spaceDown = false;
   private clipboard: Clipboard | null = null;
@@ -357,6 +361,7 @@ export class Editor {
   /** 문서가 바뀐 뒤 호출: 재컴파일 + 알림 */
   private commit(): void {
     this.rebuild();
+    if (this.pending && !this.pins.has(this.pending.fromKey)) this.pending = null;
     this.emit('structure');
     this.emit('history');
   }
@@ -511,7 +516,8 @@ export class Editor {
   }
 
   private draw(): void {
-    const wd = this.drag.kind === 'wire' ? this.drag.drag : undefined;
+    const pf = this.pending ? this.pins.get(this.pending.fromKey) : undefined;
+    const wd = this.drag.kind === 'wire' ? this.drag.drag : pf ? { from: pf, to: this.pending!.to, target: this.pending!.target, valid: this.pending!.valid } : undefined;
     render(this.ctx, {
       doc: this.doc,
       lib: this.lib,
@@ -626,8 +632,23 @@ export class Editor {
     }
 
     if (hit?.kind === 'pin') {
-      this.drag = { kind: 'wire', drag: { from: hit.pin, to: p, valid: false } };
+      // 클릭 연결 대기 중이면 이 핀과 연결 (Ctrl 없이 눌러도 됨)
+      if (this.pending) {
+        const fromKey = this.pending.fromKey;
+        this.pending = null;
+        this.dirty = true;
+        const from = this.pins.get(fromKey);
+        if (from && from.key !== hit.pin.key) this.tryConnect(from, hit.pin);
+        return;
+      }
+      this.drag = { kind: 'wire', drag: { from: hit.pin, to: p, valid: false }, click: e.ctrlKey || e.metaKey ? sp : undefined };
       return;
+    }
+    // 핀이 아닌 곳을 누르면 클릭 연결 취소 (빈 곳 클릭은 취소만 하고 끝)
+    if (this.pending) {
+      this.pending = null;
+      this.dirty = true;
+      if (!hit) return;
     }
     if (hit?.kind === 'instance' || hit?.kind === 'io') {
       const set = hit.kind === 'instance' ? 'instances' : 'io';
@@ -701,6 +722,14 @@ export class Editor {
         return;
       case 'none': {
         const hit = hitTest(this.doc, this.lib, p, this.tol());
+        if (this.pending) {
+          const from = this.pins.get(this.pending.fromKey);
+          const target = hit?.kind === 'pin' && hit.pin.key !== this.pending.fromKey ? hit.pin : undefined;
+          this.pending.to = p;
+          this.pending.target = target;
+          this.pending.valid = !!target && !!from && target.role !== from.role && target.width === from.width;
+          this.dirty = true;
+        }
         const hp = hit?.kind === 'pin' ? hit.pin.key : undefined;
         const hw = hit?.kind === 'wire' ? hit.id : undefined;
         if (hp !== this.hoverPin || hw !== this.hoverWire) {
@@ -724,14 +753,17 @@ export class Editor {
         return;
       case 'wire': {
         const t = d.drag.target;
-        if (!t) return;
-        this.history.record(this.doc);
-        const r = connect(this.doc, this.lib, d.drag.from.ref, t.ref);
-        if (r.ok) this.commit();
-        else {
-          this.history.discardLast();
-          this.opts.onToast?.(this.opts.messages.connect(r.reason, r.widths), 'error');
+        if (!t) {
+          // Ctrl(⌘)+클릭(거의 안 끌고 뗌): 클릭 연결 대기 시작
+          const sp = this.local(e);
+          if (d.click && Math.hypot(sp.x - d.click.x, sp.y - d.click.y) < 6) {
+            this.pending = { fromKey: d.drag.from.key, to: d.drag.to, valid: false };
+            const hint = this.opts.messages.pendingWire?.();
+            if (hint) this.opts.onToast?.(hint);
+          }
+          return;
         }
+        this.tryConnect(d.drag.from, t);
         return;
       }
       case 'move':
@@ -753,6 +785,16 @@ export class Editor {
         }
         this.setSelection(found);
       }
+    }
+  }
+
+  private tryConnect(from: PinGeom, to: PinGeom): void {
+    this.history.record(this.doc);
+    const r = connect(this.doc, this.lib, from.ref, to.ref);
+    if (r.ok) this.commit();
+    else {
+      this.history.discardLast();
+      this.opts.onToast?.(this.opts.messages.connect(r.reason, r.widths), 'error');
     }
   }
 
@@ -825,6 +867,11 @@ export class Editor {
       return;
     }
     if (key === 'escape') {
+      if (this.pending) {
+        this.pending = null;
+        this.dirty = true;
+        return;
+      }
       this.drag = { kind: 'none' };
       this.setSelection(emptySelection());
       return;
@@ -836,7 +883,7 @@ export class Editor {
     const c = this.canvas.style;
     if (this.drag.kind === 'pan') c.cursor = 'grabbing';
     else if (this.spaceDown) c.cursor = 'grab';
-    else if (hover === 'pin') c.cursor = 'crosshair';
+    else if (hover === 'pin' || this.pending) c.cursor = 'crosshair';
     else if (hover === 'instance' || hover === 'io') c.cursor = 'move';
     else if (hover === 'wire') c.cursor = 'pointer';
     else c.cursor = 'default';
