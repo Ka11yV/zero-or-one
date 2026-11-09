@@ -3,6 +3,7 @@ import type { EditorDoc } from '../editor/doc';
 import { isEditorDoc } from '../editor/doc';
 import { LEVELS, type Level } from '../levels';
 import { createLibrary, type ChipLibrary, type CompositeChipDef } from '../sim';
+import { notifyLocalChange } from './changes';
 
 export interface LevelRecord {
   cleared: boolean;
@@ -95,18 +96,31 @@ function isProgress(v: unknown): v is Progress {
   return !!p && p.version === 1 && typeof p.levels === 'object' && typeof p.chips === 'object';
 }
 
+/** 저장된(또는 서버에서 받은) 값을 검사해 진행 기록으로. 형식이 다르면 null */
+export function parseProgress(v: unknown): Progress | null {
+  if (!isProgress(v)) return null;
+  const drafts = Object.fromEntries(Object.entries(v.drafts ?? {}).filter(([, d]) => isEditorDoc(d)));
+  return { ...emptyProgress(), ...v, drafts };
+}
+
 export function loadProgress(): Progress {
   try {
     const raw = globalThis.localStorage?.getItem(KEY);
-    const v: unknown = raw ? JSON.parse(raw) : null;
-    if (isProgress(v)) {
-      const drafts = Object.fromEntries(Object.entries(v.drafts ?? {}).filter(([, d]) => isEditorDoc(d)));
-      return { ...emptyProgress(), ...v, drafts };
-    }
+    const p = raw ? parseProgress(JSON.parse(raw)) : null;
+    if (p) return p;
   } catch {
     /* 손상된 데이터 — 새로 시작 */
   }
   return emptyProgress();
+}
+
+/** 계정 동기화 직전 백업 (되돌리기용) */
+export function backupProgress(p: Progress): void {
+  try {
+    globalThis.localStorage?.setItem(`${KEY}-backup`, JSON.stringify(p));
+  } catch {
+    /* 저장 불가 */
+  }
 }
 
 export function saveProgress(p: Progress): void {
@@ -115,4 +129,5 @@ export function saveProgress(p: Progress): void {
   } catch {
     /* 저장 불가 — 계속 진행 */
   }
+  notifyLocalChange();
 }

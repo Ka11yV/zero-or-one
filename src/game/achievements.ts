@@ -3,6 +3,7 @@ import type { Lang } from '../i18n';
 import { isProgramLevel, LEVELS } from '../levels';
 import { nandCountOf } from '../sim/netlist';
 import type { CustomChipStore } from '../storage/customChips';
+import { notifyLocalChange } from '../storage/changes';
 import { levelRecord, libraryFor, type Progress } from '../storage/progress';
 
 const FLAG_KEY = 'logic-game:achv-flags';
@@ -16,15 +17,20 @@ export function readFlags(): Set<AchvFlag> {
   }
 }
 
-export function setFlag(f: AchvFlag): void {
-  const s = readFlags();
-  if (s.has(f)) return;
-  s.add(f);
+export function writeFlags(s: Set<AchvFlag>): void {
   try {
     globalThis.localStorage?.setItem(FLAG_KEY, JSON.stringify([...s]));
   } catch {
     /* 저장 불가 */
   }
+}
+
+export function setFlag(f: AchvFlag): void {
+  const s = readFlags();
+  if (s.has(f)) return;
+  s.add(f);
+  writeFlags(s);
+  notifyLocalChange();
 }
 
 export interface AchvContext {

@@ -33,6 +33,8 @@ import { sandboxPanel } from './sandboxPanel';
 import { mountWorkspace } from './workspace';
 import { mountProgram } from './programScreen';
 import { showAchievements } from './achievementsModal';
+import { accountButton } from './accountModal';
+import { createSync } from '../storage/sync';
 
 type Route = { name: 'map' } | { name: 'level'; id: string } | { name: 'sandbox'; share?: string };
 
@@ -52,6 +54,14 @@ export function startApp(root: HTMLElement): void {
   let draftTimer: ReturnType<typeof setTimeout> | undefined;
   /** 맵으로 돌아갔을 때 반짝일 레벨 (방금 깬 레벨) */
   let lastCleared: string | undefined;
+
+  // 계정 동기화: 서버 기록이 합쳐지면 진행 기록을 다시 읽는다. 맵이면 다시 그리고, 작업 중인 화면은 건드리지 않는다
+  const sync = createSync({
+    onRemoteApplied: () => {
+      progress = loadProgress();
+      if (parseRoute(location.hash).name === 'map') render();
+    },
+  });
 
   const setProgress = (p: Progress) => {
     progress = p;
@@ -306,9 +316,11 @@ export function startApp(root: HTMLElement): void {
       openSandbox: () => go('#/sandbox'),
       openCodex: () => showCodex(progress),
       openAchievements: () => showAchievements(progress),
+      account: () => accountButton(sync),
     });
   };
 
   window.addEventListener('hashchange', render);
   render();
+  void sync.init();
 }

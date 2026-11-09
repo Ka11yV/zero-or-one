@@ -2051,3 +2051,67 @@ textarea.code.small-code {
 .achv p {
   margin: 2px 0 0;
 }
+
+/* ---------- 계정 ---------- */
+.account-btn[data-status='synced'] {
+  border-color: color-mix(in srgb, var(--on) 50%, var(--border));
+}
+.account-btn[data-status='offline'],
+.account-btn[data-status='error'] {
+  border-color: var(--error);
+}
+.account-form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 12px;
+}
+.account-form .field {
+  font-size: 13px;
+  margin-bottom: 2px;
+}
+.account-form .field input {
+  width: 220px;
+  font-size: 14px;
+}
+.account-form .hint {
+  margin: -2px 0 6px;
+  text-align: right;
+}
+.account-form .error:empty {
+  display: none;
+}
+.account .swap {
+  margin-top: 10px;
+  text-align: center;
+}
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--bus);
+  cursor: pointer;
+  font: inherit;
+  text-decoration: underline;
+  padding: 0;
+}
+.sync-status {
+  font-size: 14px;
+  margin: 6px 0 10px;
+}
+.sync-status[data-status='offline'],
+.sync-status[data-status='error'] {
+  color: var(--error);
+}
+.global-toast {
+  position: fixed;
+  z-index: 1000;
+}
+@media (max-width: 480px) {
+  .account-form .field {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .account-form .field input {
+    width: 100%;
+  }
+}

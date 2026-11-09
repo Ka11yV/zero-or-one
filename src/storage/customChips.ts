@@ -2,6 +2,7 @@
 import { isEditorDoc, type EditorDoc } from '../editor/doc';
 import { isProgramLevel, LEVELS } from '../levels';
 import { BUILTINS, type CompositeChipDef } from '../sim';
+import { notifyLocalChange } from './changes';
 
 const KEY = 'logic-game:v1:custom-chips';
 
@@ -21,14 +22,19 @@ export interface CustomChipStore {
 
 export const emptyCustomStore = (): CustomChipStore => ({ version: 1, chips: {}, sources: {}, meta: {} });
 
+/** 저장된(또는 서버에서 받은) 값을 검사해 내 칩 저장소로. 형식이 다르면 null */
+export function parseCustomStore(raw: unknown): CustomChipStore | null {
+  const v = raw as CustomChipStore | null;
+  if (!v || v.version !== 1 || typeof v.chips !== 'object' || v.chips === null) return null;
+  const sources = Object.fromEntries(Object.entries(v.sources ?? {}).filter(([, d]) => isEditorDoc(d)));
+  return { version: 1, chips: v.chips, sources, meta: v.meta ?? {} };
+}
+
 export function loadCustomChips(): CustomChipStore {
   try {
     const raw = globalThis.localStorage?.getItem(KEY);
-    const v = raw ? (JSON.parse(raw) as CustomChipStore) : null;
-    if (v && v.version === 1 && typeof v.chips === 'object') {
-      const sources = Object.fromEntries(Object.entries(v.sources ?? {}).filter(([, d]) => isEditorDoc(d)));
-      return { version: 1, chips: v.chips, sources, meta: v.meta ?? {} };
-    }
+    const v = raw ? parseCustomStore(JSON.parse(raw)) : null;
+    if (v) return v;
   } catch {
     /* 손상 — 빈 저장소 */
   }
@@ -41,6 +47,7 @@ export function saveCustomChips(s: CustomChipStore): void {
   } catch {
     /* 저장 불가 */
   }
+  notifyLocalChange();
 }
 
 /** 직접 지을 수 없는 이름: 내장 칩, 캠페인에서 해금되는 칩(아직 안 깬 것도 포함) */

@@ -12,6 +12,8 @@ export interface MapActions {
   openAchievements(): void;
   /** 방금 깬 레벨: 타일을 반짝인다 */
   highlight?: string;
+  /** 계정 버튼 (언어를 바꿔 다시 그릴 때마다 새로 만든다) */
+  account?: () => HTMLElement;
 }
 
 export function mountMap(root: HTMLElement, progress: Progress, actions: MapActions): { dispose(): void } {
@@ -31,6 +33,7 @@ export function mountMap(root: HTMLElement, progress: Progress, actions: MapActi
         button(`📖 ${t('map.codex')}`, actions.openCodex),
         button(`🏆 ${t('achv.title')}`, actions.openAchievements),
         button(`🧪 ${t('map.sandbox')}`, actions.openSandbox),
+        actions.account?.(),
         muteButton(),
         button(t('toolbar.lang'), () => setLang(getLang() === 'ko' ? 'en' : 'ko'), 'ghost'),
       ),
