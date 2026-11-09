@@ -334,6 +334,7 @@ one:  .db 1
 | M7 | 계산기 | 7세그먼트·키패드, ALU, 챕터 7 | 계산기 보스 클리어 ✅ |
 | M8 | 컴퓨터 | 제어 유닛, 프로그램 화면/어셈블러, 챕터 8, 엔딩 | 곱셈 프로그램 실행 ✅ |
 | M9 | 고수 확장·마감 | 내 칩 저장, 샌드박스 프로그램 적재, 픽셀 화면·빠른 클럭, 내보내기/공유 링크, 도전 과제 (§10) | 샌드박스에서 만든 칩으로 CPU 프로그램이 화면에 그림 |
+| M10 | 계정·서버 | 아이디/비밀번호 계정, 진행 기록 서버 동기화(잃지 않는 합치기), A1 배포 (§11) | 두 기기에서 같은 계정으로 이어서 플레이 |
 
 ---
 
@@ -356,3 +357,17 @@ one:  .db 1
 | **빠른 클럭** | 자동 클럭 속도 선택: 1.4 Hz ~ 1000 Hz (빠르면 한 프레임에 여러 펄스) | — |
 | **내보내기/불러오기/공유** | 회로 + 사용한 칩 정의(전이적으로)를 묶어 JSON 파일 또는 압축(deflate-raw, base64url) 공유 링크 `#/sandbox?c=…`. 불러올 때는 현재 샌드박스를 바꿀지 먼저 확인(실행 취소 가능). 같은 이름의 다른 내 칩이 있으면 중단 | — |
 | **도전 과제** | 진행 기록·내 칩·플래그로 판정하는 업적 14개 (예: XOR을 NAND 4개로, CPU를 NAND 5만 개 이하로, 픽셀 화면에 점 찍기). 맵의 🏆 버튼 | `logic-game:achv-flags` |
+
+## 11. M10 — 계정과 서버 (A1)
+
+- **구성**: `server/` Fastify + PostgreSQL 17. A1 한 대에서 Docker Compose(`deploy/`)로 web(Caddy: 정적 파일 + 자동 HTTPS) · api · db. 배포 절차는 [DEPLOY_A1.md](./DEPLOY_A1.md).
+- **API** (`/api`): `POST auth/signup|login|logout`, `GET auth/me`, `GET|PUT saves/:game` (`game = 'logic'`; 이후 다른 게임은 `GAMES`에 추가).
+- **DB**: `users`(아이디 소문자 3–20자, scrypt 해시) · `sessions`(토큰 sha256만 저장, 30일) · `saves`(user, game, jsonb data, rev). 마이그레이션은 `server/src/db.ts`에 덧붙이기만 한다.
+- **보안**: 세션 쿠키 `HttpOnly; Secure; SameSite=Lax`, 상태 변경 요청은 Origin 검사, 로그인·가입 IP당 분당 10회, DB/API는 외부 포트 없음.
+- **동기화** (`src/storage/sync.ts`, `syncMerge.ts`):
+  - 세이브 한 벌 = `{progress, custom(내 칩), flags(도전 과제)}`. 샌드박스 회로·설정은 브라우저에만.
+  - 로그인 안 하면 지금과 똑같이 localStorage만. 로그인하면 서버 세이브를 받아 **합치기**: 레벨 기록은 좋은 쪽(클리어 OR, 별 최대, NAND 최소), 칩·회로는 합집합(같은 항목은 미뤄 둔 변경이 있는 쪽 우선), 내 칩은 최근 저장 쪽, 플래그 합집합 → 어느 쪽 기록도 잃지 않는다.
+  - 이후 로컬 저장마다 1.5초 뒤 `PUT`(baseRev). 다른 기기가 먼저 저장했으면 409 → 합쳐서 다시.
+  - 처음 계정과 맞출 때 `logic-game:v1:progress-backup`에 백업. 상태는 `logic-game:sync`. 로그아웃해도 로컬 기록은 지우지 않는다.
+- **개발 서버**: Vite가 `/api`를 프록시 — 5317 → 8787, 테스트 서버 5318 → 8788(DB `zoo_e2e`, 쿠키 `zoo_sid_test`)로 분리해 실제 게임 기록과 섞이지 않게.
+

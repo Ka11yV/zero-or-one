@@ -1,0 +1,26 @@
+# SITE_ADDRESS: 도메인(예: zeroorone.example) 또는 도메인이 없으면 <공인IP>.sslip.io
+# 도메인 이름이면 Caddy가 Let's Encrypt 인증서를 자동으로 받고 갱신한다.
+{$SITE_ADDRESS} {
+	encode zstd gzip
+
+	handle /api/* {
+		reverse_proxy api:8787
+	}
+
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+
+	@assets path /assets/*
+	header @assets Cache-Control "public, max-age=31536000, immutable"
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+}
