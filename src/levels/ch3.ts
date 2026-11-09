@@ -21,6 +21,7 @@ export const chapter3: Chapter = {
       test: autoTest([pin('a'), pin('b')], (a, b) => [(a + b) & 1, (a + b) >> 1]),
       unlocks: { chipId: 'HALF_ADDER' },
       stars: { maxNand: 5 },
+      devices: { columnAdd: { a: 'a', b: 'b', sum: 'sum', cout: 'carry' } },
       text: {
         ko: {
           title: '반가산기',
@@ -124,6 +125,7 @@ export const chapter3: Chapter = {
       test: autoTest([pin('a'), pin('b'), pin('cin')], (a, b, c) => [(a + b + c) & 1, (a + b + c) >> 1]),
       unlocks: { chipId: 'FULL_ADDER' },
       stars: { maxNand: 13 },
+      devices: { columnAdd: { a: 'a', b: 'b', cin: 'cin', sum: 'sum', cout: 'cout' } },
       text: {
         ko: {
           title: '전가산기',
@@ -215,6 +217,7 @@ export const chapter3: Chapter = {
       test: autoTest([pin('a:4'), pin('b:4'), pin('cin')], (a, b, c) => [(a + b + c) & 15, (a + b + c) >> 4]),
       unlocks: { chipId: 'ADD4' },
       stars: { maxNand: 52 },
+      devices: { columnAdd: { a: 'a', b: 'b', cin: 'cin', sum: 'sum', cout: 'cout' } },
       text: {
         ko: {
           title: '4비트 가산기',

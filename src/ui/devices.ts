@@ -1,7 +1,7 @@
 // 입출력 장치: 7세그먼트 표시기와 키패드
 import type { Editor } from '../editor/editor';
 import { t } from '../i18n';
-import { h } from './dom';
+import { h, rich } from './dom';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -261,5 +261,137 @@ export function numberWheelCard(editor: Editor, pins: () => string[]): { el: HTM
       n.label.replaceChildren(h('code', { class: 'inline' }, bits), ` = ${v & 15}`, v & 8 ? h('span', { class: 'minus' }, ` (${signed4(v)})`) : '');
     }
   };
+  return { el, render, sync };
+}
+
+// ---------- 세로셈 (덧셈의 자리별 올림) ----------
+
+export interface ColumnAddition {
+  /** 자리 i로 들어오는 올림 (carries[0] = cin, carries[n] = 최종 올림) */
+  carries: number[];
+  aBits: number[];
+  bBits: number[];
+  sumBits: number[];
+  cout: number;
+}
+
+/** 순수 함수: a + b + cin을 자리별로 (비트 0 = 1의 자리) */
+export function columnAddition(a: number, b: number, cin: number, n: number): ColumnAddition {
+  const carries = [cin & 1];
+  const aBits: number[] = [];
+  const bBits: number[] = [];
+  const sumBits: number[] = [];
+  for (let i = 0; i < n; i++) {
+    const x = (a >> i) & 1;
+    const y = (b >> i) & 1;
+    const t = x + y + carries[i]!;
+    aBits.push(x);
+    bBits.push(y);
+    sumBits.push(t & 1);
+    carries.push(t >> 1);
+  }
+  return { carries, aBits, bBits, sumBits, cout: carries[n]! };
+}
+
+export interface ColumnAddPins {
+  a: string;
+  b: string;
+  cin?: string;
+  sum: string;
+  cout: string;
+}
+
+/**
+ * 세로셈 카드: 위에서부터 올림 / a / + b / 정답 / 내 회로.
+ * 올림이 1인 자리는 오른쪽 아래(아랫자리)에서 올라온 화살표로 표시하고, 내 회로 줄에서 정답과 다른 자리는 빨갛게.
+ */
+export function columnAddCard(editor: Editor, spec: () => ColumnAddPins | undefined): { el: HTMLElement; render(): void; sync(): void } {
+  const el = h('section', { class: 'card device column-card' });
+  let refresh: (() => void) | null = null;
+  const render = () => {
+    el.textContent = '';
+    refresh = null;
+    const p = spec();
+    const width = (name: string) => [...editor.doc.inputs, ...editor.doc.outputs].find((x) => x.name === name)?.width;
+    const n = p ? width(p.a) : undefined;
+    el.hidden = !p || !n || width(p.b) !== n || width(p.sum) !== n;
+    if (!p || !n || el.hidden) return;
+
+    // 칸: [라벨] [cout 자리] [n-1 … 0]
+    const grid = h('div', { class: 'col-grid', style: `--cols:${n + 1}` });
+    const cell = (cls: string, text = '') => h('span', { class: `cc ${cls}` }, text);
+    const row = (label: string, cls: string) => {
+      const cells = Array.from({ length: n + 1 }, (_, k) => cell(`${cls} ${k > 0 && (n - k) % 4 === 3 && k !== 1 ? 'nib' : ''}`));
+      grid.append(h('span', { class: `cl ${cls}` }, label), ...cells);
+      return cells;
+    };
+    const place = row('', 'place');
+    const carryRow = row(t('device.colCarry'), 'carry');
+    const aRow = row(p.a, 'a');
+    const bRow = row(`+ ${p.b}`, 'b');
+    grid.append(h('span', { class: 'col-rule', style: `grid-column: 1 / span ${n + 2}` }));
+    const ansRow = row(t('device.colAnswer'), 'ans');
+    const mineRow = row(t('device.colMine'), 'mine');
+    // 자리값 (1, 2, 4, …)
+    for (let i = 0; i < n; i++) place[n - i]!.textContent = String(2 ** i);
+    place[0]!.textContent = '';
+    const explain = h('ol', { class: 'col-explain' });
+    el.append(h('h2', {}, t('device.column')), rich(t('device.columnHint'), 'rich col-hint'), h('div', { class: 'col-wrap' }, grid), n <= 4 ? explain : '');
+
+    refresh = () => {
+      const v = new Map(editor.ioValues().map((x) => [x.name, x.value]));
+      const A = v.get(p.a) ?? 0;
+      const B = v.get(p.b) ?? 0;
+      const CIN = p.cin ? (v.get(p.cin) ?? 0) : 0;
+      const c = columnAddition(A, B, CIN, n);
+      const mySum = v.get(p.sum);
+      const myCout = v.get(p.cout);
+      for (let i = 0; i < n; i++) {
+        const k = n - i;
+        aRow[k]!.textContent = String(c.aBits[i]);
+        bRow[k]!.textContent = String(c.bBits[i]);
+        ansRow[k]!.textContent = String(c.sumBits[i]);
+        // 이 자리로 들어오는 올림 (1의 자리는 cin)
+        const ci = c.carries[i]!;
+        const showCin = i > 0 || !!p.cin;
+        carryRow[k]!.textContent = showCin && ci ? '1' : '';
+        carryRow[k]!.classList.toggle('on', showCin && ci === 1);
+        carryRow[k]!.classList.toggle('from-cin', i === 0 && !!p.cin && ci === 1);
+        const mine = mySum === undefined ? undefined : (mySum >> i) & 1;
+        mineRow[k]!.textContent = mine === undefined ? '?' : String(mine);
+        mineRow[k]!.classList.toggle('bad', mine !== undefined && mine !== c.sumBits[i]);
+      }
+      // 맨 왼쪽: 최종 올림 = cout
+      carryRow[0]!.textContent = c.cout ? '1' : '';
+      carryRow[0]!.classList.toggle('on', c.cout === 1);
+      ansRow[0]!.textContent = String(c.cout);
+      ansRow[0]!.classList.add('cout');
+      mineRow[0]!.textContent = myCout === undefined ? '?' : String(myCout & 1);
+      mineRow[0]!.classList.toggle('bad', myCout !== undefined && (myCout & 1) !== c.cout);
+      mineRow[0]!.classList.add('cout');
+      aRow[0]!.textContent = '';
+      bRow[0]!.textContent = '';
+      // 자리별 설명 (4자리 이하일 때)
+      if (n <= 4) {
+        explain.textContent = '';
+        for (let i = 0; i < n; i++) {
+          const ci = c.carries[i]!;
+          const terms = [String(c.aBits[i]), String(c.bBits[i]), ...(ci && (i > 0 || p.cin) ? [t('device.colCarryTerm')] : [])];
+          const total = c.aBits[i]! + c.bBits[i]! + (i > 0 || p.cin ? ci : 0);
+          const li = h('li', { class: c.carries[i + 1] ? 'carry' : '' });
+          li.append(
+            h('b', {}, t('device.colPlace', { p: 2 ** i })),
+            ' ',
+            `${terms.join(' + ')} = ${total} → `,
+            c.carries[i + 1] ? t('device.colWriteCarry', { s: c.sumBits[i]! }) : t('device.colWrite', { s: c.sumBits[i]! }),
+          );
+          explain.append(li);
+        }
+        explain.append(h('li', { class: 'muted' }, c.cout ? t('device.colCoutOn', { cout: p.cout }) : t('device.colCoutOff', { cout: p.cout })));
+      }
+    };
+    refresh();
+  };
+  const sync = () => refresh?.();
   return { el, render, sync };
 }

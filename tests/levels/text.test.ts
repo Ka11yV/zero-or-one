@@ -43,3 +43,27 @@ describe('레벨 설명', () => {
     expect([0, 7, 8, 13, 15].map(signed4)).toEqual([0, 7, -8, -3, -1]);
   });
 });
+
+describe('세로셈', () => {
+  it('자리별 올림 계산', async () => {
+    const { columnAddition } = await import('../../src/ui/devices');
+    // 3 + 1 = 4: 1의 자리 1+1=2 → 0 쓰고 올림, 2의 자리 1+0+1=2 → 0 쓰고 올림, 4의 자리 0+0+1=1
+    expect(columnAddition(3, 1, 0, 4)).toEqual({ carries: [0, 1, 1, 0, 0], aBits: [1, 1, 0, 0], bBits: [1, 0, 0, 0], sumBits: [0, 0, 1, 0], cout: 0 });
+    expect(columnAddition(15, 1, 0, 4).cout).toBe(1);
+    expect(columnAddition(1, 1, 1, 1)).toMatchObject({ sumBits: [1], cout: 1 });
+    const r = columnAddition(200, 100, 1, 8);
+    expect(r.sumBits.reduce((v, b, i) => v | (b << i), 0) + r.cout * 256).toBe(301);
+  });
+
+  it('세로셈 핀은 실제 핀이고 폭이 맞다', () => {
+    for (const l of LEVELS) {
+      if (isProgramLevel(l) || !l.devices?.columnAdd) continue;
+      const c = l.devices.columnAdd;
+      const w = new Map([...l.inputs, ...l.outputs].map((p) => [p.name, p.width]));
+      expect(w.get(c.a), l.id).toBe(w.get(c.b));
+      expect(w.get(c.sum), l.id).toBe(w.get(c.a));
+      expect(w.get(c.cout), l.id).toBe(1);
+      if (c.cin) expect(w.get(c.cin), l.id).toBe(1);
+    }
+  });
+});

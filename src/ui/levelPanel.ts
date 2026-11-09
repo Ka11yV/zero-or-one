@@ -8,7 +8,7 @@ import { formatValue, inputsCard } from './inputsCard';
 import { helpCard, highlightCurrentRow, statsCard } from './sandboxPanel';
 import { timingChart } from './timingChart';
 import { memoryViewer } from './memoryViewer';
-import { keypadCard, numberWheelCard, seg7Card, signed4 } from './devices';
+import { columnAddCard, keypadCard, numberWheelCard, seg7Card, signed4 } from './devices';
 import { diagnose, levelCoachText, type Coaching } from '../game/coach';
 import type { PanelHooks, Toast } from './workspace';
 
@@ -45,8 +45,9 @@ export function levelPanel(panel: HTMLElement, editor: Editor, toast: Toast, opt
   const memory = memoryViewer(editor);
   const display = seg7Card(editor, () => level.devices?.seg7 ?? []);
   const wheel = numberWheelCard(editor, () => level.devices?.wheel ?? []);
+  const column = columnAddCard(editor, () => level.devices?.columnAdd);
   const keypad = level.devices?.keypad && clockPin ? keypadCard(editor, level.devices.keypad.pin, clockPin) : null;
-  panel.append(tabs, body, ...(keypad ? [keypad.el] : []), display.el, wheel.el, inputs.el, h('div', { class: 'test-bar' }, summary, testBtn), memory.el, ...(chart ? [chart.el] : []), statsBox, helpBox);
+  panel.append(tabs, body, ...(keypad ? [keypad.el] : []), display.el, wheel.el, column.el, inputs.el, h('div', { class: 'test-bar' }, summary, testBtn), memory.el, ...(chart ? [chart.el] : []), statsBox, helpBox);
 
   const text = () => level.text[getLang()];
 
@@ -290,6 +291,7 @@ export function levelPanel(panel: HTMLElement, editor: Editor, toast: Toast, opt
     memory.render();
     display.render();
     wheel.render();
+    column.render();
     keypad?.render();
   };
 
@@ -305,12 +307,14 @@ export function levelPanel(panel: HTMLElement, editor: Editor, toast: Toast, opt
       memory.render();
       display.sync();
       wheel.sync();
+      column.sync();
     },
     sim: () => {
       highlightCurrentRow(editor, rowsEl);
       inputs.sync();
       display.sync();
       wheel.sync();
+      column.sync();
       chart?.sample();
       memory.sync();
     },

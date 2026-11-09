@@ -352,6 +352,7 @@ export const chapter4: Chapter = {
       test: autoTest([pin('a:8'), pin('b:8'), pin('cin')], (a, b, c) => [(a + b + c) & 255, (a + b + c) >> 8]),
       unlocks: { chipId: 'ADD8' },
       stars: { maxNand: 104 },
+      devices: { columnAdd: { a: 'a', b: 'b', cin: 'cin', sum: 'sum', cout: 'cout' } },
       text: {
         ko: {
           title: '8비트 가산기',

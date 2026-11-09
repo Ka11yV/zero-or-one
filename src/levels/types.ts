@@ -35,6 +35,8 @@ export interface LevelDevices {
   keypad?: { pin: string };
   /** 숫자 다이얼: 4비트 핀을 16칸 원 위 바늘로 (부호 없는/있는 값 함께) */
   wheel?: string[];
+  /** 세로셈: a + b (+ cin)를 자리별 올림과 함께, 내 회로 출력과 비교 */
+  columnAdd?: { a: string; b: string; cin?: string; sum: string; cout: string };
 }
 
 export interface CircuitLevel {

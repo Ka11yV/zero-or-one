@@ -2795,3 +2795,139 @@ textarea.code.small-code {
     transition: none;
   }
 }
+
+/* ---------- 세로셈 ---------- */
+.col-hint p {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+.col-wrap {
+  overflow-x: auto;
+  padding: 4px 0 2px;
+}
+.col-grid {
+  display: grid;
+  grid-template-columns: auto repeat(var(--cols), minmax(22px, 1fr));
+  align-items: center;
+  row-gap: 2px;
+  font: 15px 'SF Mono', ui-monospace, monospace;
+  width: max-content;
+  min-width: 100%;
+}
+.col-grid .cl {
+  font: 11px inherit;
+  font-family: inherit;
+  color: var(--muted);
+  padding-right: 8px;
+  white-space: nowrap;
+  text-align: right;
+}
+.col-grid .cc {
+  position: relative;
+  text-align: center;
+  height: 24px;
+  line-height: 24px;
+}
+.col-grid .cc.nib {
+  border-left: 1px dashed var(--border);
+}
+.col-grid .cc.place {
+  font-size: 9px;
+  height: 14px;
+  line-height: 14px;
+  color: var(--muted);
+}
+.col-grid .cl.place {
+  height: 14px;
+}
+.col-grid .cc.carry {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+}
+.col-grid .cc.carry.on {
+  animation: carry-pop 0.35s ease-out;
+}
+/* 올림 화살표: 오른쪽 아래(아랫자리)에서 올라와 이 자리로 */
+.col-grid .cc.carry.on:not(.from-cin)::after {
+  content: '';
+  position: absolute;
+  right: -55%;
+  top: 9px;
+  width: 22px;
+  height: 22px;
+  border-top: 2px solid var(--accent);
+  border-right: 2px solid var(--accent);
+  border-top-right-radius: 14px;
+  opacity: 0.75;
+  pointer-events: none;
+}
+.col-grid .cc.carry.on:not(.from-cin)::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 6px;
+  margin-left: 4px;
+  border: 4px solid transparent;
+  border-right-color: var(--accent);
+  opacity: 0.85;
+}
+.col-grid .cc.carry.from-cin {
+  color: var(--bus);
+}
+.col-grid .cc.a,
+.col-grid .cc.b {
+  color: var(--text);
+}
+.col-rule {
+  height: 0;
+  border-top: 2px solid var(--muted);
+  margin: 2px 0;
+}
+.col-grid .cc.ans {
+  color: var(--on);
+  font-weight: 700;
+}
+.col-grid .cc.ans.cout,
+.col-grid .cc.mine.cout {
+  color: var(--accent);
+}
+.col-grid .cc.mine {
+  color: var(--muted);
+  font-size: 13px;
+}
+.col-grid .cc.mine.bad {
+  color: #fff;
+  background: color-mix(in srgb, var(--error) 70%, transparent);
+  border-radius: 4px;
+}
+.col-grid .cl.mine,
+.col-grid .cl.ans {
+  font-size: 11px;
+}
+.col-explain {
+  margin: 10px 0 0;
+  padding-left: 18px;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--text);
+}
+.col-explain li.carry::marker,
+.col-explain li.carry b {
+  color: var(--accent);
+}
+@keyframes carry-pop {
+  0% {
+    transform: translateY(8px) scale(0.6);
+    opacity: 0;
+  }
+  70% {
+    transform: translateY(-2px) scale(1.15);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .col-grid .cc.carry.on {
+    animation: none;
+  }
+}
